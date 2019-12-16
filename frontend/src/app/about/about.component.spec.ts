@@ -1,10 +1,10 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing'
 import { SlideshowModule } from 'ng-simple-slideshow'
-import { HttpClientModule } from '@angular/common/http'
+import { HttpClientTestingModule } from '@angular/common/http/testing'
 
 import { AboutComponent } from './about.component'
 
-xdescribe('AboutComponent', () => {
+xdescribe('AboutComponent', () => { // FIXME https://github.com/dockleryxk/ng-simple-slideshow/issues/70
   let component: AboutComponent
   let fixture: ComponentFixture<AboutComponent>
 
@@ -12,12 +12,12 @@ xdescribe('AboutComponent', () => {
 
     TestBed.configureTestingModule({
       imports: [
-        HttpClientModule,
+        HttpClientTestingModule,
         SlideshowModule
       ],
       declarations: [ AboutComponent ]
     })
-    .compileComponents()
+      .compileComponents()
   }))
 
   beforeEach(() => {

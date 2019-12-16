@@ -1,4 +1,4 @@
-# References
+# References [![Mentioned in Awesome AppSec](https://awesome.re/mentioned-badge.svg)](https://github.com/paragonie/awesome-appsec)
 
 Did you write a blog post, magazine article or do a podcast about or
 mentioning OWASP Juice Shop? Add it to this file and open a PR! The same
@@ -17,35 +17,50 @@ where this project was mentioned or used!
 * [Heroku Button of the Month](https://hello.heroku.com/webmail/36622/679286305/8049a634b1a01b0aa75c0966325856dc9a463b7f1beeb6a2f32cbb30248b5bc6)
   in November 2017
   ([:camera:](https://twitter.com/owasp_juiceshop/status/930917114948587526))
+* [Heroku Button of the Month](https://hello.heroku.com/webmail/36622/844098776/9fe33b8eda9eb79bca7ee569888b1874)
+  in March 2019
+  ([:camera:](https://twitter.com/owasp_juiceshop/status/1110641064673710080))
 
 ## Web Links
 
 ### Pod- & Webcasts
 
 * [Application Security Podcast](https://securityjourney.com/application-security-podcast):
-  * Episode 4.17:
-    [The Joy of the Vulnerable Web: JuiceShop (S04E17)](https://securityjourney.com/blog/the-joy-of-the-vulnerable-web-juiceshops04e17/)
-  * Episode 4.20:
-    [Security Culture Hacking: Disrupting the Security Status Quo (S04E20)](https://www.securityjourney.com/blog/security-culture-hacking-disrupting-the-security-status-quo-s04e20/)
+  * Episode 5.21:
+    [Season 5 Finale — A cross section of #AppSec (S05E21)](https://podcast.securityjourney.com/season-5-finale-a-cross-section-of-appsec/)
+    (contains
+    [5 minute AppSec: Björn Kimminich — JuiceShop](https://www.securityjourney.com/blog/bjorn-kimminich-juiceship-5-minute-appsec/)
+    entirely)
+  * Episode 5.20:
+    [Ronnie Flathers - Security programs big and small](https://podcast.securityjourney.com/ronnie-flathers-security-programs-big-and-small/)
     :mega:
+  * Episode 5.9:
+    [The new JuiceShop, GSOC, and Open Security Summit](https://securityjourney.com/blog/bjorn-kimminich-the-new-juiceshop-gsoc-and-open-security-summit/)
+  * 5 minute AppSec:
+    [Björn Kimminich — JuiceShop](https://www.securityjourney.com/blog/bjorn-kimminich-juiceship-5-minute-appsec/)
   * Episode 4.27:
     [Season 4 Finale (S04E27)](https://www.securityjourney.com/blog/season-4-finale-s04e27/)
     (snippet from
     [4.17](https://securityjourney.com/blog/the-joy-of-the-vulnerable-web-juiceshops04e17/))
+  * Episode 4.20:
+    [Security Culture Hacking: Disrupting the Security Status Quo (S04E20)](https://www.securityjourney.com/blog/security-culture-hacking-disrupting-the-security-status-quo-s04e20/)
+    :mega:
+  * Episode 4.17:
+    [The Joy of the Vulnerable Web: JuiceShop (S04E17)](https://securityjourney.com/blog/the-joy-of-the-vulnerable-web-juiceshops04e17/)
 * Webcast recording on [7 Minute Security](https://7ms.us):
   [DIY $500 Pentest Lab - Part 1](https://www.youtube.com/watch?v=7qnaR6ZmJzA)
   :mega:
 * [HackerSploit](https://www.youtube.com/channel/UC0ZTPkdxlAKf-V33tqXwi3Q)
   Youtube channel:
-  * [How To Install OWASP Juice Shop](https://youtu.be/tvNKp1QXV_8)
-  * [Web App Penetration Testing - #13 - CSRF (Cross Site Request Forgery)](https://youtu.be/TwG0Rd0hr18)
+  * [OWASP Juice Shop - SQL Injection](https://youtu.be/nH4r6xv-qGg)
+    :godmode:
+  * [Web App Penetration Testing - #15 - HTTP Attributes (Cookie Stealing)](https://youtu.be/8s3ChNKU85Q)
     :bulb:
   * [Web App Penetration Testing - #14 - Cookie Collection & Reverse Engineering](https://youtu.be/qtr0qtptYys)
     :bulb:
-  * [Web App Penetration Testing - #15 - HTTP Attributes (Cookie Stealing)](https://youtu.be/8s3ChNKU85Q)
+  * [Web App Penetration Testing - #13 - CSRF (Cross Site Request Forgery)](https://youtu.be/TwG0Rd0hr18)
     :bulb:
-  * [OWASP Juice Shop - SQL Injection](https://youtu.be/nH4r6xv-qGg)
-    :godmode:
+  * [How To Install OWASP Juice Shop](https://youtu.be/tvNKp1QXV_8)
 * Recorded live streams from the
   [Twitch](https://aka.ms/DevSlopTwitch)/[Mixer](https://aka.ms/DevSlop-Mixer)
   [OWASP DevSlop](https://devslop.co/) Show:
@@ -95,6 +110,15 @@ where this project was mentioned or used!
 
 ### Blogs & Articles
 
+* [20+ Free Resources To Legally Practice Your Ethical Hacking Skills](https://blog.elearnsecurity.com/free-resources-to-legally-practice-ethical-hacking.html?utm_source=twitter&utm_medium=social&utm_campaign=eh_resources_blogpost)
+  on [eLearnSecurity](https://blog.elearnsecurity.com/) :mega:
+* Blog post on
+  [The Daily Swig - Cybersecurity news and views](https://portswigger.net/daily-swig):
+  [OWASP security projects showcased at All Day DevOps conference](https://portswigger.net/daily-swig/owasp-security-projects-showcased-at-all-day-devops-conference)
+* Blog post on [klarsen.net - A Maker's Blog](https://klarsen.net):
+  [OWASP Juice Shop SQLi](https://klarsen.net/python/owasp-juice-shop-sqli/)
+* White paper by Kelley Bryant:
+  [OWASP: Application Security's Best Friend](https://drive.google.com/file/d/0ByCGDrCX7bx7dnB0TGJJSnNzRmhtUUE4U1RfR3d0YVl4RHFr/view)
 * Article (:es:) on Medium by
   [Elzer Pineda](https://medium.com/@elzerjp):
   [Null Byte Attack Juice Shop y algo mas!!](https://medium.com/@elzerjp/null-byte-attack-juice-shop-y-algo-mas-2c6d271b2fd5)
@@ -162,6 +186,8 @@ where this project was mentioned or used!
 
 ## Lectures and Trainings
 
+* [Real World Web Penetration Testing](https://training.secureideas.com/course/real-world-web-pentesting/start-course/)
+  course by Jason Gillam :dollar:
 * [Brakeing Down Security Web App Sec Training #1](https://drive.google.com/drive/folders/0B-qfQ-gWynwidlJ1YjgxakdPWDA)
   by Sunny Wear ([Youtube](https://www.youtube.com/watch?v=zi3yDovd0RY))
 * [Finding Website Vulnerabilities with Burp](https://www.packtpub.com/mapt/video/networking_and_servers/9781788399678/81304/81308/finding-website-vulnerabilities-with-burp)
@@ -185,7 +211,7 @@ where this project was mentioned or used!
   [Open Security Summit 2019](https://github.com/OpenSecuritySummit/oss2019),
   03.-07.06.2019
 * Student projects from
-  [Google Suummer of Code 2018](https://summerofcode.withgoogle.com/archive/2018/projects)
+  [Google Summer of Code 2018](https://summerofcode.withgoogle.com/archive/2018/projects)
   * [OWASP Juice Shop : Challenge Pack 2018](https://summerofcode.withgoogle.com/archive/2018/projects/6267528737193984)
     by Shoeb Patel (mentored by Jannik Hollenbach and Timo Pagel)
   * [OWASP Juice Shop : Frontend Technology Update](https://summerofcode.withgoogle.com/archive/2018/projects/6636660909408256)
@@ -203,12 +229,52 @@ where this project was mentioned or used!
 
 ## Conference and Meetup Appearances
 
+#### 2020
+
+_t.b.a._
+
 #### 2019
 
-* [OWASP Juice Shop - First you 😂😂 then you 😢](http://bkimminich.github.io/juice-shop)
+* [Juice Shop 9: Would you like a free refill?](https://god.owasp.de/archive/2019/)
   by Björn Kimminich,
-  [OWASP Portugal Meetup](https://www.owasp.org/index.php/Portugal) at
+  [German OWASP Day 2019](https://god.owasp.de/archive/2019/),
+  10.12.2019
+* [S' OWASP Saft-Lädeli / The OWASP Juice Shop](https://www.meetup.com/de-DE/OWASPSwitzerland/events/264422942/)
+  by Björn Kimminich,
+  [OWASP Switzerland Chapter Meeting](https://www.meetup.com/de-DE/OWASPSwitzerland/),
+  18.11.2019
+* [OWASP Juice Shop: The ultimate All Vuln WebApp](https://www.alldaydevops.com/addo-speakers/bj%C3%B6rn-kimminich)
+  by Björn Kimminich, [All Day DevOps](https://www.alldaydevops.com/),
+  06.11.2019
+  ([Youtube](https://www.youtube.com/watch?v=-JuPprlGb48&t=13939s)
+  :bulb:)
+* [Juice Shop](https://globalappsecamsterdam2019.sched.com/event/U84e/juice-shop)
+  by Björn Kimminich, Project Showcase track of the
+  [Global AppSec Amsterdam 2019](https://ams.globalappsec.org/),
+  26.09.2019 ([Youtube](https://youtu.be/XXkMY_VyJ-Y) :bulb:)
+* [Elbsides vs. Juice Shop](https://2019.elbsides.de/programme.html#elbsides-vs-juice-shop)
+  workshop with Björn Kimminich,
+  [Elbsides 2019](https://2019.elbsides.de), 16.09.2019
+* [Introduction to OWASP Juice Shop](https://bsidesmcr2019.sched.com/event/Sw0q/introduction-to-owasp-juice-shop)
+  by Tim Corless-Carter,
+  [BSidesMCR 2019](https://www.bsidesmcr.org.uk/), 29.08.2019
+  ([Youtube](https://youtu.be/hlgp7oeVpac) :godmode:)
+* [JavaScript-Security: "Pwn" den Juice Shop](https://www.enterjs.de/single?id=7685&javascript-security%3A-%22pwn%22-den-juice-shop)
+  workshop with Timo Pagel & Björn Kimminich,
+  [enterJS 2019](https://www.enterjs.de/2019/), 25.06.2019
+* [Web Application Hacking with Burp Suite and OWASP ZAP](https://globalappsectelaviv2019.sched.com/event/MLSU/web-application-hacking-with-burp-suite-and-owasp-zap)
+  training with Vandana Verma,
+  [Global Appsec Tel Aviv 2019](https://globalappsectelaviv2019.sched.com),
+  28.05.2019
+* [A good first impression can work wonders: creating AppSec training that developers <3](https://locomocosec2019.sched.com/event/MGNM/a-good-first-impression-can-work-wonders-creating-appsec-training-that-developers-v)
+  by Leif Dreizler,
+  [LocoMocoSec 2019](https://locomocosec2019.sched.com/), 18.04.2019
+* [Pixels vs. Juice Shop](https://github.com/PixelsCamp/talks/blob/master/2019/pixels-vs-juice-shop_bjoern-kimminich.md)
+  workshop with Björn Kimminich,
   [Pixels Camp v3.0](https://pixels.camp), 21.03.2019
+* [OWASP Juice Shop - First you :-D :-D then you :,-(](https://github.com/PixelsCamp/talks/blob/master/2019/owasp-juice-shop_bjoern-kimminich.md)
+  by Björn Kimminich, [Pixels Camp v3.0](https://pixels.camp),
+  21.03.2019 ([Youtube](https://youtu.be/v9qrAK_iBa0) :bulb:)
 * [News from the fruit press: Juice Shop 8](https://www.meetup.com/de-DE/OWASP-Hamburg-Stammtisch/events/258185324/)
   by Björn Kimminich,
   [39. OWASP Stammtisch Hamburg](https://www.meetup.com/de-DE/OWASP-Hamburg-Stammtisch),

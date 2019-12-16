@@ -5,7 +5,7 @@ const insecurity = require('../../lib/insecurity')
 const API_URL = 'http://localhost:3000/api'
 const REST_URL = 'http://localhost:3000/rest'
 
-const authHeader = { 'Authorization': 'Bearer ' + insecurity.authorize(), 'content-type': 'application/json' }
+const authHeader = { Authorization: 'Bearer ' + insecurity.authorize(), 'content-type': 'application/json' }
 const jsonHeader = { 'content-type': 'application/json' }
 
 describe('/api/Users', () => {
@@ -23,7 +23,7 @@ describe('/api/Users', () => {
     return frisby.get(API_URL + '/Users', { headers: authHeader })
       .expect('status', 200)
       .expect('jsonTypes', 'data.*', {
-        'password': Joi.any().forbidden()
+        password: Joi.any().forbidden()
       })
   })
 
@@ -51,7 +51,7 @@ describe('/api/Users', () => {
       body: {
         email: 'horst2@horstma.nn',
         password: 'hooooorst',
-        isAdmin: true
+        role: 'admin'
       }
     })
       .expect('status', 201)
@@ -63,7 +63,69 @@ describe('/api/Users', () => {
         password: Joi.any().forbidden()
       })
       .expect('json', 'data', {
-        isAdmin: true
+        role: 'admin'
+      })
+  })
+
+  it('POST new deluxe user', () => {
+    return frisby.post(API_URL + '/Users', {
+      headers: jsonHeader,
+      body: {
+        email: 'horst3@horstma.nn',
+        password: 'hooooorst',
+        role: 'deluxe'
+      }
+    })
+      .expect('status', 201)
+      .expect('header', 'content-type', /application\/json/)
+      .expect('jsonTypes', 'data', {
+        id: Joi.number(),
+        createdAt: Joi.string(),
+        updatedAt: Joi.string(),
+        password: Joi.any().forbidden()
+      })
+      .expect('json', 'data', {
+        role: 'deluxe'
+      })
+  })
+
+  it('POST new accounting user', () => {
+    return frisby.post(API_URL + '/Users', {
+      headers: jsonHeader,
+      body: {
+        email: 'horst4@horstma.nn',
+        password: 'hooooorst',
+        role: 'accounting'
+      }
+    })
+      .expect('status', 201)
+      .expect('header', 'content-type', /application\/json/)
+      .expect('jsonTypes', 'data', {
+        id: Joi.number(),
+        createdAt: Joi.string(),
+        updatedAt: Joi.string(),
+        password: Joi.any().forbidden()
+      })
+      .expect('json', 'data', {
+        role: 'accounting'
+      })
+  })
+
+  it('POST user not belonging to customer, deluxe, accounting, admin is forbidden', () => {
+    return frisby.post(API_URL + '/Users', {
+      headers: jsonHeader,
+      body: {
+        email: 'horst5@horstma.nn',
+        password: 'hooooorst',
+        role: 'accountinguser'
+      }
+    })
+      .expect('status', 400)
+      .expect('header', 'content-type', /application\/json/)
+      .then(({ json }) => {
+        expect(json.message).toBe('Validation error: Validation isIn on role failed')
+        expect(json.errors[0].field).toBe('role')
+        expect(json.errors[0].message).toBe('Validation isIn on role failed')
       })
   })
 
@@ -138,24 +200,25 @@ describe('/rest/user/authentication-details', () => {
 })
 
 describe('/rest/user/whoami', () => {
-  xit('GET own user id and email on who-am-i request', () => {
+  it('GET own user id and email on who-am-i request', () => {
     return frisby.post(REST_URL + '/user/login', {
       headers: jsonHeader,
       body: {
-        email: 'bjoern.kimminich@googlemail.com',
-        password: 'bW9jLmxpYW1lbGdvb2dAaGNpbmltbWlrLm5yZW9qYg=='
+        email: 'bjoern.kimminich@gmail.com',
+        password: 'bW9jLmxpYW1nQGhjaW5pbW1pay5ucmVvamI='
       }
     })
       .expect('status', 200)
       .then(({ json }) => {
-        return frisby.get(REST_URL + '/user/whoami', { headers: { 'Authorization': 'Bearer ' + json.authentication.token } })
+        return frisby.get(REST_URL + '/user/whoami', { headers: { Cookie: 'token=' + json.authentication.token } })
           .expect('status', 200)
           .expect('header', 'content-type', /application\/json/)
           .expect('jsonTypes', 'user', {
-            id: Joi.number()
+            id: Joi.number(),
+            email: Joi.string()
           })
           .expect('json', 'user', {
-            email: 'bjoern.kimminich@googlemail.com'
+            email: 'bjoern.kimminich@gmail.com'
           })
       })
   })
@@ -164,20 +227,35 @@ describe('/rest/user/whoami', () => {
     return frisby.get(REST_URL + '/user/whoami')
       .expect('status', 200)
       .expect('header', 'content-type', /application\/json/)
-      .expect('jsonTypes', {})
+      .expect('json', {
+        user: {}
+      })
   })
 
   it('GET who-am-i request returns nothing on invalid auth token', () => {
-    return frisby.get(REST_URL + '/user/whoami', { headers: { 'Authorization': 'Bearer InvalidAuthToken' } })
+    return frisby.get(REST_URL + '/user/whoami', { headers: { Authorization: 'Bearer InvalidAuthToken' } })
       .expect('status', 200)
       .expect('header', 'content-type', /application\/json/)
-      .expect('jsonTypes', {})
+      .expect('json', {
+        user: {}
+      })
   })
 
   it('GET who-am-i request returns nothing on broken auth token', () => {
-    return frisby.get(REST_URL + '/user/whoami', { headers: { 'Authorization': 'BoarBeatsBear' } })
+    return frisby.get(REST_URL + '/user/whoami', { headers: { Authorization: 'BoarBeatsBear' } })
       .expect('status', 200)
       .expect('header', 'content-type', /application\/json/)
-      .expect('jsonTypes', {})
+      .expect('json', {
+        user: {}
+      })
+  })
+
+  it('GET who-am-i request returns nothing on expired auth token', () => {
+    return frisby.get(REST_URL + '/user/whoami', { headers: { Authorization: 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MSwidXNlcm5hbWUiOiIiLCJlbWFpbCI6ImFkbWluQGp1aWNlLXNoLm9wIiwicGFzc3dvcmQiOiIwMTkyMDIzYTdiYmQ3MzI1MDUxNmYwNjlkZjE4YjUwMCIsInJvbGUiOiJhZG1pbiIsImxhc3RMb2dpbklwIjoiMC4wLjAuMCIsInByb2ZpbGVJbWFnZSI6ImRlZmF1bHQuc3ZnIiwidG90cFNlY3JldCI6IiIsImlzQWN0aXZlIjp0cnVlLCJjcmVhdGVkQXQiOiIyMDE5LTA4LTE5IDE1OjU2OjE1LjYyOSArMDA6MDAiLCJ1cGRhdGVkQXQiOiIyMDE5LTA4LTE5IDE1OjU2OjE1LjYyOSArMDA6MDAiLCJkZWxldGVkQXQiOm51bGx9LCJpYXQiOjE1NjYyMzAyMjQsImV4cCI6MTU2NjI0ODIyNH0.FL0kkcInY5sDMGKeLHfEOYDTQd3BjR6_mK7Tcm_RH6iCLotTSRRoRxHpLkbtIQKqBFIt14J4BpLapkzG7ppRWcEley5nego-4iFOmXQvCBz5ISS3HdtM0saJnOe0agyVUen3huFp4F2UCth_y2ScjMn_4AgW66cz8NSFPRVpC8g' } })
+      .expect('status', 200)
+      .expect('header', 'content-type', /application\/json/)
+      .expect('json', {
+        user: {}
+      })
   })
 })

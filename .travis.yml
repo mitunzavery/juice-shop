@@ -1,25 +1,24 @@
+dist: xenial
 language: node_js
+os:
+  - linux
+  - osx
+  - windows
 node_js:
+  - 12
   - 10
-  - 8
-  - 11
+  - 13
 stages:
   - lint
   - test
   - integration
-  - e2e
-  - deploy
-branches:
-  except:
-    - gh-pages
-    - l10n_develop
+env:
+  global:
+    secure: KBx27d+h4Aa1vsRG1/gBxIFgee5N4Ln9rf1hmCcpHYp+9A+qspXpJRGm8Loy1dF+NhfY0POnQshAzOgG2isv7/CnNIJmWjHLXwqNvMkKpl2EDbl7EGBGByjvR9K9A84rn7BJJAEsb0/6NNofLhvhheL5mxd1SYvdlbewYeyg3dU=
 addons:
   chrome: stable
-  code_climate:
-    repo_token:
-      secure: NC3ew4c92DO4SAdbJvaZkaRnEZaZcAr9NcxOeraqAKHRXY3COnerWGR8+kIE9KiadcRdatmu0sSjWldDcAZfmMwOraMI9CDkqdPSjtjciCVEFdGi+OPOvMY/gOJU6XeM7lsO5MvYD7mqChl2gR6s7IO/klPahf53c97PPDo3C90=
-install: if [ -z "$TRAVIS_TAG" ]; then npm install; fi
-script: if [ -z "$TRAVIS_TAG" ]; then NODE_ENV=test npm test; fi
+install: if [[ -z "$TRAVIS_TAG" ]]; then npm install; fi
+script: if [[ -z "$TRAVIS_TAG" && "$TRAVIS_OS_NAME" != "windows" ]]; then NODE_ENV=test npm test; fi
 before_deploy:
   - rm -rf node_modules
   - rm -rf frontend/node_modules
@@ -42,25 +41,49 @@ jobs:
   include:
     - stage: lint
       if: tag IS blank
-      install: npm install standard && cd frontend && npm install && cd ..
+      install: npm i -g standard@14 && cd frontend && npm install && cd ..
       script: npm run lint
     - stage: integration
       if: tag IS blank
+      os: linux
+      before_script:
+        - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64
+          > ./cc-test-reporter
+        - chmod +x ./cc-test-reporter
       script:
         - export NODE_ENV=test
         - npm test
         - npm run frisby
       after_success:
-        - "./node_modules/.bin/lcov-result-merger 'build/reports/coverage/**/lcov.info' 'build/reports/coverage/lcov_merged.info'"
-        - "./node_modules/.bin/codeclimate-test-reporter < ./build/reports/coverage/lcov_merged.info"
+        - "./cc-test-reporter format-coverage -t lcov -o build/reports/coverage/codeclimate.frontend.json build/reports/coverage/frontend-tests/lcov.info"
+        - "./cc-test-reporter format-coverage -t lcov -o build/reports/coverage/codeclimate.server.json build/reports/coverage/server-tests/lcov.info"
+        - "./cc-test-reporter format-coverage -t lcov -o build/reports/coverage/codeclimate.api.json build/reports/coverage/api-tests/lcov.info"
+        - "./cc-test-reporter sum-coverage build/reports/coverage/codeclimate.*.json -p 3"
+        - "./cc-test-reporter upload-coverage"
     - stage: e2e
       if: tag IS blank
+      os: linux
       script:
         - export NODE_ENV=test
         - npm run protractor
+    - stage: smoke
+      if: tag IS blank
+      os: linux
+      before_install:
+        - chmod +x test/smoke/smoke-test.sh
+      install:
+        - npm install --production
+        - npm run package
+      script:
+        - cd dist
+        - tar -zxf juice-shop-*.tgz
+        - cd juice-shop_*
+        - npm start &
+        - ../../test/smoke/smoke-test.sh http://localhost:3000
     - stage: deploy
-      if: (branch = master OR branch = develop OR branch = facelift) AND NOT type = pull_request
-      node_js: 11
+      if: "(branch = master OR branch = develop) AND NOT type = pull_request"
+      os: linux
+      node_js: 12
       install: skip
       script: skip
       deploy:
@@ -70,7 +93,6 @@ jobs:
           app:
             master: juice-shop
             develop: juice-shop-staging
-            facelift: juice-shop-experimental
           on:
             repo: bkimminich/juice-shop
 notifications:

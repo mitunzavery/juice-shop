@@ -32,8 +32,13 @@ module.exports = async () => {
     createBasketItems,
     createAnonymousFeedback,
     createComplaints,
-    createRecycleItems,
-    createOrders
+    createRecycleItem,
+    createOrders,
+    createQuantity,
+    createPurchaseQuantity,
+    createWallet,
+    createDeliveryMethods,
+    createMemories
   ]
 
   for (const creator of creators) {
@@ -48,9 +53,12 @@ async function createChallenges () {
 
   await Promise.all(
     challenges.map(async ({ name, category, description, difficulty, hint, hintUrl, key, disabledEnv }) => {
-      let effectiveDisabledEnv = utils.determineDisabledContainerEnv(disabledEnv)
+      const effectiveDisabledEnv = utils.determineDisabledContainerEnv(disabledEnv)
+      description = description.replace(/juice-sh\.op/, config.get('application.domain'))
+      hint = hint.replace(/OWASP Juice Shop's/, `${config.get('application.name')}'s`)
+
       try {
-        const challenge = await models.Challenge.create({
+        datacache.challenges[key] = await models.Challenge.create({
           key,
           name,
           category,
@@ -61,7 +69,6 @@ async function createChallenges () {
           hintUrl: showHints ? hintUrl : null,
           disabledEnv: config.get('challenges.safetyOverride') ? null : effectiveDisabledEnv
         })
-        datacache.challenges[key] = challenge
       } catch (err) {
         logger.error(`Could not insert Challenge ${name}: ${err.message}`)
       }
@@ -73,25 +80,98 @@ async function createUsers () {
   const users = await loadStaticData('users')
 
   await Promise.all(
-    users.map(async ({ username, email, password, customDomain, key, isAdmin, profileImage, securityQuestion, feedback, totpSecret: totpSecret = '' }) => {
+    users.map(async ({ username, email, password, customDomain, key, role, deletedFlag, profileImage, securityQuestion, feedback, address, card, totpSecret: totpSecret = '' }) => {
       try {
         const completeEmail = customDomain ? email : `${email}@${config.get('application.domain')}`
         const user = await models.User.create({
           username,
           email: completeEmail,
           password,
-          isAdmin,
+          role,
           profileImage: profileImage || 'default.svg',
           totpSecret
         })
         datacache.users[key] = user
         if (securityQuestion) await createSecurityAnswer(user.id, securityQuestion.id, securityQuestion.answer)
         if (feedback) await createFeedback(user.id, feedback.comment, feedback.rating)
+        if (deletedFlag) await deleteUser(user.id)
+        if (address) await createAddresses(user.id, address)
+        if (card) await createCards(user.id, card)
       } catch (err) {
         logger.error(`Could not insert User ${key}: ${err.message}`)
       }
     })
   )
+}
+
+async function createWallet () {
+  const users = await loadStaticData('users')
+  return Promise.all(
+    users.map((user, index) => {
+      return models.Wallet.create({
+        UserId: index + 1,
+        balance: user.walletBalance !== undefined ? user.walletBalance : 0
+      }).catch((err) => {
+        logger.error(`Could not create wallet: ${err.message}`)
+      })
+    })
+  )
+}
+
+async function createDeliveryMethods () {
+  const delivery = await loadStaticData('delivery')
+
+  await Promise.all(
+    delivery.map(async ({ name, price, deluxePrice, eta }) => {
+      try {
+        await models.Delivery.create({
+          name,
+          price,
+          deluxePrice,
+          eta
+        })
+      } catch (err) {
+        logger.error(`Could not insert Delivery Method: ${err.message}`)
+      }
+    })
+  )
+}
+
+function createAddresses (UserId, addresses) {
+  addresses.map((address) => {
+    return models.Address.create({
+      UserId: UserId,
+      country: address.country,
+      fullName: address.fullName,
+      mobileNum: address.mobileNum,
+      zipCode: address.zipCode,
+      streetAddress: address.streetAddress,
+      city: address.city,
+      state: address.state ? address.state : null
+    }).catch((err) => {
+      logger.error(`Could not create address: ${err.message}`)
+    })
+  })
+}
+
+function createCards (UserId, cards) {
+  cards.map((card) => {
+    return models.Card.create({
+      UserId: UserId,
+      fullName: card.fullName,
+      cardNum: card.cardNum,
+      expMonth: card.expMonth,
+      expYear: card.expYear
+    }).catch((err) => {
+      logger.error(`Could not create card: ${err.message}`)
+    })
+  })
+}
+
+function deleteUser (userId) {
+  return models.User.destroy({ where: { id: userId } }).catch((err) => {
+    logger.error(`Could not perform soft delete for the user ${userId}: ${err.message}`)
+  })
 }
 
 function createRandomFakeUsers () {
@@ -117,17 +197,58 @@ function createRandomFakeUsers () {
   ))
 }
 
+function createQuantity () {
+  const limitPerUserProuductIds = [1, 5, 7, 20, 24]
+  return Promise.all(
+    config.get('products').map((product, index) => {
+      return models.Quantity.create({
+        ProductId: index + 1,
+        quantity: product.quantity !== undefined ? product.quantity : Math.floor(Math.random() * 70 + 30),
+        limitPerUser: limitPerUserProuductIds.includes(index + 1) ? 5 : null
+      }).catch((err) => {
+        logger.error(`Could not create quantity: ${err.message}`)
+      })
+    })
+  )
+}
+function createMemories () {
+  const memories = [models.Memory.create({
+    imagePath: 'assets/public/images/uploads/😼-#zatschi-#whoneedsfourlegs-1572600969477.jpg',
+    caption: '😼 #zatschi #whoneedsfourlegs',
+    UserId: datacache.users.bjoernOwasp.id
+  }).catch((err) => {
+    logger.error(`Could not create memory: ${err.message}`)
+  })]
+  Array.prototype.push.apply(memories, Promise.all(
+    config.get('memories').map((memory) => {
+      if (utils.startsWith(memory.image, 'http')) {
+        const imageUrl = memory.image
+        memory.image = utils.extractFilename(memory.image)
+        utils.downloadToFile(imageUrl, 'assets/public/images/uploads/' + memory.image)
+      }
+      return models.Memory.create({
+        imagePath: 'assets/public/images/uploads/' + memory.image,
+        caption: memory.caption,
+        UserId: datacache.users[memory.user].id
+      }).catch((err) => {
+        logger.error(`Could not create memory: ${err.message}`)
+      })
+    })
+  ))
+  return memories
+}
+
 function createProducts () {
-  const products = config.get('products').map((product) => {
-    // set default price values
+  const products = utils.thaw(config.get('products')).map((product) => {
     product.price = product.price || Math.floor(Math.random())
+    product.deluxePrice = product.deluxePrice || product.price
     product.description = product.description || 'Lorem ipsum dolor sit amet, consectetuer adipiscing elit.'
 
     // set default image values
     product.image = product.image || 'undefined.png'
     if (utils.startsWith(product.image, 'http')) {
       const imageUrl = product.image
-      product.image = decodeURIComponent(product.image.substring(product.image.lastIndexOf('/') + 1))
+      product.image = utils.extractFilename(product.image)
       utils.downloadToFile(imageUrl, 'frontend/dist/frontend/assets/public/images/products/' + product.image)
     }
 
@@ -156,14 +277,14 @@ function createProducts () {
   let blueprint = blueprintRetrivalChallengeProduct.fileForRetrieveBlueprintChallenge
   if (utils.startsWith(blueprint, 'http')) {
     const blueprintUrl = blueprint
-    blueprint = decodeURIComponent(blueprint.substring(blueprint.lastIndexOf('/') + 1))
+    blueprint = utils.extractFilename(blueprint)
     utils.downloadToFile(blueprintUrl, 'frontend/dist/frontend/assets/public/images/products/' + blueprint)
   }
   datacache.retrieveBlueprintChallengeFile = blueprint // TODO Do not cache separately but load from config where needed (same as keywordsForPastebinDataLeakChallenge)
 
   return Promise.all(
     products.map(
-      ({ reviews = [], useForChristmasSpecialChallenge = false, urlForProductTamperingChallenge = false, ...product }) =>
+      ({ reviews = [], useForChristmasSpecialChallenge = false, urlForProductTamperingChallenge = false, fileForRetrieveBlueprintChallenge = false, ...product }) =>
         models.Product.create(product).catch(
           (err) => {
             logger.error(`Could not insert Product ${product.name}: ${err.message}`)
@@ -172,10 +293,18 @@ function createProducts () {
           if (useForChristmasSpecialChallenge) { datacache.products.christmasSpecial = persistedProduct }
           if (urlForProductTamperingChallenge) {
             datacache.products.osaft = persistedProduct
-            datacache.challenges.changeProductChallenge.update({ description: customizeChangeProductChallenge(
-              datacache.challenges.changeProductChallenge.description,
-              config.get('challenges.overwriteUrlForProductTamperingChallenge'),
-              persistedProduct)
+            datacache.challenges.changeProductChallenge.update({
+              description: customizeChangeProductChallenge(
+                datacache.challenges.changeProductChallenge.description,
+                config.get('challenges.overwriteUrlForProductTamperingChallenge'),
+                persistedProduct)
+            })
+          }
+          if (fileForRetrieveBlueprintChallenge && datacache.challenges.changeProductChallenge.hint) {
+            datacache.challenges.retrieveBlueprintChallenge.update({
+              hint: customizeRetrieveBlueprintChallenge(
+                datacache.challenges.retrieveBlueprintChallenge.hint,
+                persistedProduct)
             })
           }
           return persistedProduct
@@ -203,13 +332,18 @@ function createProducts () {
     customDescription = customDescription.replace('https://owasp.slack.com', customUrl)
     return customDescription
   }
+
+  function customizeRetrieveBlueprintChallenge (hint, customProduct) {
+    return hint.replace(/OWASP Juice Shop Logo \(3D-printed\)/g, customProduct.name)
+  }
 }
 
 function createBaskets () {
   const baskets = [
     { UserId: 1 },
     { UserId: 2 },
-    { UserId: 3 }
+    { UserId: 3 },
+    { UserId: 11 }
   ]
 
   return Promise.all(
@@ -247,6 +381,11 @@ function createBasketItems () {
       BasketId: 3,
       ProductId: 5,
       quantity: 1
+    },
+    {
+      BasketId: 4,
+      ProductId: 4,
+      quantity: 2
     }
   ]
 
@@ -299,81 +438,79 @@ function createComplaints () {
   })
 }
 
-function createRecycleItems () {
-  const recycleItems = [
+function createRecycleItem () {
+  const recycles = [
     {
-      id: 42,
       UserId: 2,
       quantity: 800,
-      address: 'Starfleet HQ, 24-593 Federation Drive, San Francisco, CA',
+      AddressId: 4,
       date: '2270-01-17',
       isPickup: true
     },
     {
-      id: 698,
       UserId: 3,
       quantity: 1320,
-      address: '22/7 Winston Street, Sydney, Australia, Earth',
+      AddressId: 6,
       date: '2006-01-14',
       isPickup: true
     },
     {
       UserId: 4,
       quantity: 120,
-      address: '999 Norton Street, Norfolk, USA',
+      AddressId: 1,
       date: '2018-04-16',
       isPickup: true
     },
     {
       UserId: 1,
       quantity: 300,
-      address: '6-10 Leno Towers, Eastern Empire, CA',
+      AddressId: 3,
       date: '2018-01-17',
       isPickup: true
     },
     {
-      UserId: 6,
+      UserId: 4,
       quantity: 350,
-      address: '88/2 Lindenburg Apartments, East Street, Oslo, Norway',
+      AddressId: 1,
       date: '2018-03-17',
       isPickup: true
     },
     {
-      UserId: 2,
+      UserId: 3,
       quantity: 200,
-      address: '222, East Central Avenue, Adelaide, New Zealand',
+      AddressId: 6,
       date: '2018-07-17',
       isPickup: true
     },
     {
       UserId: 4,
       quantity: 140,
-      address: '100 Yellow Peak Road, West Central New York, USA',
+      AddressId: 1,
       date: '2018-03-19',
       isPickup: true
     },
     {
-      UserId: 3,
+      UserId: 1,
       quantity: 150,
-      address: '15 Riviera Road, Western Frontier, Menlo Park CA',
+      AddressId: 3,
       date: '2018-05-12',
       isPickup: true
     },
     {
-      UserId: 8,
+      UserId: 16,
       quantity: 500,
-      address: '712 Irwin Avenue, River Bank Colony, Easter Frontier, London, UK',
+      AddressId: 2,
       date: '2019-02-18',
       isPickup: true
     }
   ]
   return Promise.all(
-    recycleItems.map((item) => createRecycles(item))
+    recycles.map((recycle) => createRecycle(recycle))
   )
 }
 
-function createRecycles (item) {
-  return models.Recycle.create(item).catch((err) => {
+function createRecycle (data) {
+  return models.Recycle.create(data).catch((err) => {
     logger.error(`Could not insert Recycling Model: ${err.message}`)
   })
 }
@@ -389,7 +526,10 @@ function createSecurityQuestions () {
     'Name of your favorite pet?',
     'Last name of dentist when you were a teenager? (Do not include \'Dr.\')',
     'Your ZIP/postal code when you were a teenager?',
-    'Company you first work for as an adult?'
+    'Company you first work for as an adult?',
+    'Your favorite book?',
+    'Your favorite movie?',
+    'Number of one of your customer or ID cards?'
   ]
 
   return Promise.all(
@@ -438,28 +578,59 @@ function createOrders () {
       email: (email ? email.replace(/[aeiou]/gi, '*') : undefined),
       totalPrice: basket1Products[0].total + basket1Products[1].total,
       products: basket1Products,
-      eta: Math.floor((Math.random() * 5) + 1).toString()
+      eta: Math.floor((Math.random() * 5) + 1).toString(),
+      delivered: false
     },
     {
       orderId: insecurity.hash(email).slice(0, 4) + '-' + utils.randomHexString(16),
       email: (email ? email.replace(/[aeiou]/gi, '*') : undefined),
       totalPrice: basket2Products[0].total,
       products: basket2Products,
-      eta: Math.floor((Math.random() * 5) + 1).toString()
+      eta: '0',
+      delivered: true
     }
   ]
 
   return Promise.all(
-    orders.map(({ orderId, email, totalPrice, products, eta }) =>
+    orders.map(({ orderId, email, totalPrice, products, eta, delivered }) =>
       mongodb.orders.insert({
         orderId: orderId,
         email: email,
         totalPrice: totalPrice,
         products: products,
-        eta: eta
+        eta: eta,
+        delivered: delivered
       }).catch((err) => {
         logger.error(`Could not insert Order ${orderId}: ${err.message}`)
       })
     )
+  )
+}
+
+function createPurchaseQuantity () {
+  const orderedQuantitys = [
+    {
+      quantity: 3,
+      ProductId: 1,
+      UserId: 1
+    },
+    {
+      quantity: 1,
+      ProductId: 2,
+      UserId: 1
+    },
+    {
+      quantity: 3,
+      ProductId: 3,
+      UserId: 1
+    }
+  ]
+
+  return Promise.all(
+    orderedQuantitys.map(orderedQuantity => {
+      models.PurchaseQuantity.create(orderedQuantity).catch((err) => {
+        logger.error(`Could not insert ordered quantity: ${err.message}`)
+      })
+    })
   )
 }

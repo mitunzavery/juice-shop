@@ -6,9 +6,10 @@ const config = require('config')
 
 const REST_URL = 'http://localhost:3000/rest'
 
-const authHeader = { 'Authorization': 'Bearer ' + insecurity.authorize(), 'content-type': 'application/json' }
+const jsonHeader = { 'content-type': 'application/json' }
+const authHeader = { Authorization: 'Bearer ' + insecurity.authorize(), 'content-type': 'application/json' }
 
-describe('/rest/product/:id/reviews', () => {
+describe('/rest/products/:id/reviews', () => {
   const reviewResponseSchema = {
     id: Joi.number(),
     product: Joi.number(),
@@ -17,21 +18,21 @@ describe('/rest/product/:id/reviews', () => {
   }
 
   it('GET product reviews by product id', () => {
-    return frisby.get(REST_URL + '/product/1/reviews')
+    return frisby.get(REST_URL + '/products/1/reviews')
       .expect('status', 200)
       .expect('header', 'content-type', /application\/json/)
       .expect('jsonTypes', reviewResponseSchema)
   })
 
   it('GET product reviews attack by injecting a mongoDB sleep command', () => {
-    return frisby.get(REST_URL + '/product/sleep(1)/reviews')
+    return frisby.get(REST_URL + '/products/sleep(1)/reviews')
       .expect('status', 200)
       .expect('header', 'content-type', /application\/json/)
       .expect('jsonTypes', reviewResponseSchema)
   })
 
   it('PUT single product review can be created', () => {
-    return frisby.put(REST_URL + '/product/1/reviews', {
+    return frisby.put(REST_URL + '/products/1/reviews', {
       body: {
         message: 'Lorem Ipsum',
         author: 'Anonymous'
@@ -42,7 +43,7 @@ describe('/rest/product/:id/reviews', () => {
   })
 })
 
-describe('/rest/product/reviews', () => {
+describe('/rest/products/reviews', () => {
   const updatedReviewResponseSchema = {
     modified: Joi.number(),
     original: Joi.array(),
@@ -52,7 +53,7 @@ describe('/rest/product/reviews', () => {
   let reviewId
 
   beforeAll((done) => {
-    http.get(REST_URL + '/product/1/reviews', (res) => {
+    http.get(REST_URL + '/products/1/reviews', (res) => {
       let body = ''
 
       res.on('data', chunk => {
@@ -68,7 +69,7 @@ describe('/rest/product/reviews', () => {
   })
 
   it('PATCH single product review can be edited', () => {
-    return frisby.patch(REST_URL + '/product/reviews', {
+    return frisby.patch(REST_URL + '/products/reviews', {
       headers: authHeader,
       body: {
         id: reviewId,
@@ -81,7 +82,7 @@ describe('/rest/product/reviews', () => {
   })
 
   it('PATCH single product review editing need an authenticated user', () => {
-    return frisby.patch(REST_URL + '/product/reviews', {
+    return frisby.patch(REST_URL + '/products/reviews', {
       body: {
         id: reviewId,
         message: 'Lorem Ipsum'
@@ -91,23 +92,34 @@ describe('/rest/product/reviews', () => {
   })
 
   it('POST single product review can be liked', () => {
-    return frisby.patch(REST_URL + '/product/reviews', {
-      headers: authHeader,
+    return frisby.post(REST_URL + '/user/login', {
+      headers: jsonHeader,
       body: {
-        id: reviewId
+        email: 'bjoern.kimminich@gmail.com',
+        password: 'bW9jLmxpYW1nQGhjaW5pbW1pay5ucmVvamI='
       }
     })
       .expect('status', 200)
+      .then(({ json: jsonLogin }) => {
+        return frisby.post(REST_URL + '/products/reviews', {
+          headers: { Authorization: 'Bearer ' + jsonLogin.authentication.token },
+          body: {
+            id: reviewId
+          }
+        })
+          .expect('status', 200)
+          .expect('jsonTypes', { likesCount: Joi.number() })
+      })
   })
 
   it('PATCH multiple product review via injection', () => {
     // Count all the reviews. (Count starts at one because of the review inserted by the other tests...)
     const totalReviews = config.get('products').reduce((sum, { reviews = [] }) => sum + reviews.length, 1)
 
-    return frisby.patch(REST_URL + '/product/reviews', {
+    return frisby.patch(REST_URL + '/products/reviews', {
       headers: authHeader,
       body: {
-        id: { '$ne': -1 },
+        id: { $ne: -1 },
         message: 'trololololololololololololololololololololololololololol'
       }
     })

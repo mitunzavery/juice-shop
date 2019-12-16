@@ -3,7 +3,7 @@ import { CaptchaService } from '../Services/captcha.service'
 import { UserService } from '../Services/user.service'
 import { FormControl, Validators } from '@angular/forms'
 import { Component, OnInit } from '@angular/core'
-import { library, dom } from '@fortawesome/fontawesome-svg-core'
+import { dom, library } from '@fortawesome/fontawesome-svg-core'
 import { faPaperPlane, faStar } from '@fortawesome/free-solid-svg-icons'
 import { FormSubmitService } from '../Services/form-submit.service'
 
@@ -19,7 +19,7 @@ export class ContactComponent implements OnInit {
 
   public authorControl: FormControl = new FormControl({ value: '', disabled: true }, [])
   public feedbackControl: FormControl = new FormControl('', [Validators.required, Validators.maxLength(160)])
-  public captchaControl: FormControl = new FormControl('', [Validators.required])
+  public captchaControl: FormControl = new FormControl('', [Validators.required, Validators.pattern('-?[\\d]*')])
   public userIdControl: FormControl = new FormControl('', [])
   public rating: number = 0
   public feedback: any = undefined
@@ -68,7 +68,7 @@ export class ContactComponent implements OnInit {
       this.error = error.error
       this.confirmation = null
       this.feedback = {}
-      this.resetForm()
+      this.resetCaptcha()
     })
   }
 
@@ -79,6 +79,12 @@ export class ContactComponent implements OnInit {
     this.feedbackControl.markAsUntouched()
     this.feedbackControl.markAsPristine()
     this.feedbackControl.setValue('')
+    this.captchaControl.markAsUntouched()
+    this.captchaControl.markAsPristine()
+    this.captchaControl.setValue('')
+  }
+
+  resetCaptcha () {
     this.captchaControl.markAsUntouched()
     this.captchaControl.markAsPristine()
     this.captchaControl.setValue('')

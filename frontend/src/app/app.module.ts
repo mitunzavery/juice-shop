@@ -3,11 +3,11 @@ import { NgModule } from '@angular/core'
 import { HTTP_INTERCEPTORS, HttpClient, HttpClientModule } from '@angular/common/http'
 import { CookieModule, CookieService } from 'ngx-cookie'
 import { ReactiveFormsModule } from '@angular/forms'
-import { Routing, AdminGuard } from './app.routing'
+import { Routing } from './app.routing'
 import { OverlayContainer } from '@angular/cdk/overlay'
 import { TranslateLoader, TranslateModule } from '@ngx-translate/core'
 import { TranslateHttpLoader } from '@ngx-translate/http-loader'
-import { QRCodeModule } from 'angularx-qrcode'
+import { QRCodeModule } from 'angular2-qrcode'
 import { BarRatingModule } from 'ng2-bar-rating'
 import { ClipboardModule } from 'ngx-clipboard'
 import { FileUploadModule } from 'ng2-file-upload'
@@ -21,10 +21,13 @@ import { BasketComponent } from './basket/basket.component'
 import { LoginComponent } from './login/login.component'
 import { ScoreBoardComponent } from './score-board/score-board.component'
 import { NavbarComponent } from './navbar/navbar.component'
+import { WelcomeComponent } from './welcome/welcome.component'
+import { WelcomeBannerComponent } from './welcome-banner/welcome-banner.component'
 import { SearchResultComponent } from './search-result/search-result.component'
 import { ForgotPasswordComponent } from './forgot-password/forgot-password.component'
 import { RegisterComponent } from './register/register.component'
 import { ContactComponent } from './contact/contact.component'
+import { ErasureRequestComponent } from './erasure-request/erasure-request.component'
 import { ChangePasswordComponent } from './change-password/change-password.component'
 import { ProductDetailsComponent } from './product-details/product-details.component'
 import { ComplaintComponent } from './complaint/complaint.component'
@@ -39,7 +42,9 @@ import { OAuthComponent } from './oauth/oauth.component'
 import { TokenSaleComponent } from './token-sale/token-sale.component'
 import { ProductReviewEditComponent } from './product-review-edit/product-review-edit.component'
 import { TwoFactorAuthEnterComponent } from './two-factor-auth-enter/two-factor-auth-enter.component'
+import { PrivacySecurityComponent } from './privacy-security/privacy-security.component'
 import { ErrorPageComponent } from './error-page/error-page.component'
+import { NgMatSearchBarModule } from 'ng-mat-search-bar'
 /* Imported Services */
 import { RequestInterceptor } from './Services/request.interceptor'
 import { ProductService } from './Services/product.service'
@@ -57,6 +62,10 @@ import { TrackOrderService } from './Services/track-order.service'
 import { RecycleService } from './Services/recycle.service'
 import { BasketService } from './Services/basket.service'
 import { ChallengeService } from './Services/challenge.service'
+import { DataSubjectService } from './Services/data-subject.service'
+import { ImageCaptchaService } from './Services/image-captcha.service'
+import { AddressService } from './Services/address.service'
+import { QuantityService } from './Services/quantity.service'
 /* Modules required for Angular Material */
 import { FlexLayoutModule } from '@angular/flex-layout'
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations'
@@ -80,10 +89,44 @@ import { MatProgressBarModule } from '@angular/material/progress-bar'
 import { MatTooltipModule } from '@angular/material/tooltip'
 import { MatMenuModule } from '@angular/material/menu'
 import { MatListModule } from '@angular/material/list'
+import { SidenavComponent } from './sidenav/sidenav.component'
 import { MatButtonToggleModule } from '@angular/material/button-toggle'
+import { LayoutModule } from '@angular/cdk/layout'
+import { MatGridListModule, MatRadioModule, MatSnackBarModule } from '@angular/material'
+import { MatBadgeModule } from '@angular/material/badge'
+/* Internal components */
+import { TwoFactorAuthComponent } from './two-factor-auth/two-factor-auth.component'
+import { DataExportComponent } from './data-export/data-export.component'
+import { LastLoginIpComponent } from './last-login-ip/last-login-ip.component'
+import { PrivacyPolicyComponent } from './privacy-policy/privacy-policy.component'
+import { AddressCreateComponent } from './address-create/address-create.component'
+import { AddressSelectComponent } from './address-select/address-select.component'
+import { PaymentService } from './Services/payment.service'
+import { PaymentComponent } from './payment/payment.component'
+import { PaymentMethodComponent } from './payment-method/payment-method.component'
+import { SavedPaymentMethodsComponent } from './saved-payment-methods/saved-payment-methods.component'
+import { AccountingComponent } from './accounting/accounting.component'
+import { OrderSummaryComponent } from './order-summary/order-summary.component'
+import { PurchaseBasketComponent } from './purchase-basket/purchase-basket.component'
+import { AddressComponent } from './address/address.component'
+import { SavedAddressComponent } from './saved-address/saved-address.component'
+import { ChallengeStatusBadgeComponent } from './challenge-status-badge/challenge-status-badge.component'
+import { OrderCompletionComponent } from './order-completion/order-completion.component'
+import { WalletComponent } from './wallet/wallet.component'
+import { WalletService } from './Services/wallet.service'
+import { OrderHistoryComponent } from './order-history/order-history.component'
+import { OrderHistoryService } from './Services/order-history.service'
+import { DeliveryMethodComponent } from './delivery-method/delivery-method.component'
+import { DeliveryService } from './Services/delivery.service'
+import { PhotoWallComponent } from './photo-wall/photo-wall.component'
+import { PhotoWallService } from './Services/photo-wall.service'
+import { DeluxeUserComponent } from './deluxe-user/deluxe-user.component'
+import { AccountingGuard, AdminGuard, DeluxeGuard, LoginGuard } from './app.guard'
+import { MatPasswordStrengthModule } from '@angular-material-extensions/password-strength'
+import { MatSlideToggleModule } from '@angular/material/slide-toggle'
 
 export function HttpLoaderFactory (http: HttpClient) {
-  return new TranslateHttpLoader(http, './../assets/i18n/', '.json')
+  return new TranslateHttpLoader(http, './assets/i18n/', '.json')
 }
 
 @NgModule({
@@ -95,10 +138,13 @@ export function HttpLoaderFactory (http: HttpClient) {
     LoginComponent,
     ScoreBoardComponent,
     NavbarComponent,
+    WelcomeComponent,
+    WelcomeBannerComponent,
     SearchResultComponent,
     ForgotPasswordComponent,
     RegisterComponent,
     ContactComponent,
+    ErasureRequestComponent,
     ChangePasswordComponent,
     ProductDetailsComponent,
     ComplaintComponent,
@@ -113,9 +159,39 @@ export function HttpLoaderFactory (http: HttpClient) {
     TokenSaleComponent,
     ProductReviewEditComponent,
     TwoFactorAuthEnterComponent,
-    ErrorPageComponent
+    SidenavComponent,
+    PrivacySecurityComponent,
+    ErrorPageComponent,
+    TwoFactorAuthComponent,
+    DataExportComponent,
+    LastLoginIpComponent,
+    PrivacyPolicyComponent,
+    OrderCompletionComponent,
+    AddressCreateComponent,
+    AddressSelectComponent,
+    AddressComponent,
+    SavedAddressComponent,
+    PaymentComponent,
+    PaymentMethodComponent,
+    SavedPaymentMethodsComponent,
+    AccountingComponent,
+    OrderSummaryComponent,
+    PurchaseBasketComponent,
+    PrivacyPolicyComponent,
+    ChallengeStatusBadgeComponent,
+    WalletComponent,
+    OrderHistoryComponent,
+    DeliveryMethodComponent,
+    PhotoWallComponent,
+    DeluxeUserComponent
   ],
-  entryComponents: [ProductDetailsComponent, QrCodeComponent, UserDetailsComponent, ProductReviewEditComponent],
+  entryComponents: [
+    ProductDetailsComponent,
+    QrCodeComponent,
+    UserDetailsComponent,
+    ProductReviewEditComponent,
+    WelcomeBannerComponent
+  ],
   imports: [
     BrowserModule,
     Routing,
@@ -129,6 +205,7 @@ export function HttpLoaderFactory (http: HttpClient) {
       }
     ),
     CookieModule.forRoot(),
+    MatPasswordStrengthModule.forRoot(),
     FlexLayoutModule,
     HttpClientModule,
     ReactiveFormsModule,
@@ -159,7 +236,14 @@ export function HttpLoaderFactory (http: HttpClient) {
     MatTooltipModule,
     MatMenuModule,
     MatListModule,
-    MatButtonToggleModule
+    MatButtonToggleModule,
+    LayoutModule,
+    MatGridListModule,
+    NgMatSearchBarModule,
+    MatBadgeModule,
+    MatRadioModule,
+    MatSnackBarModule,
+    MatSlideToggleModule
   ],
   providers: [
     {
@@ -171,6 +255,7 @@ export function HttpLoaderFactory (http: HttpClient) {
     ConfigurationService,
     AdministrationService,
     SecurityQuestionService,
+    DataSubjectService,
     UserService,
     SecurityAnswerService,
     CaptchaService,
@@ -183,7 +268,18 @@ export function HttpLoaderFactory (http: HttpClient) {
     BasketService,
     ChallengeService,
     CookieService,
-    AdminGuard
+    AdminGuard,
+    LoginGuard,
+    PaymentService,
+    AccountingGuard,
+    DeluxeGuard,
+    ImageCaptchaService,
+    AddressService,
+    QuantityService,
+    WalletService,
+    OrderHistoryService,
+    DeliveryService,
+    PhotoWallService
   ],
   bootstrap: [AppComponent]
 })

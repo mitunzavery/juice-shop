@@ -4,7 +4,7 @@ const insecurity = require('../../lib/insecurity')
 
 const API_URL = 'http://localhost:3000/api'
 
-const authHeader = { 'Authorization': 'Bearer ' + insecurity.authorize(), 'content-type': 'application/json' }
+const authHeader = { Authorization: 'Bearer ' + insecurity.authorize(), 'content-type': 'application/json' }
 
 describe('/api/Recycles', () => {
   it('POST new recycle', () => {
@@ -12,7 +12,7 @@ describe('/api/Recycles', () => {
       headers: authHeader,
       body: {
         quantity: 200,
-        address: 'Bjoern Kimminich, 123 Juicy Road, Test City',
+        AddressId: '1',
         isPickup: true,
         date: '2017-05-31'
       }
@@ -33,13 +33,6 @@ describe('/api/Recycles', () => {
       .expect('jsonTypes', 'data', {
         err: 'Sorry, this endpoint is not supported.'
       })
-  })
-
-  it('Will check if the injection works and returns the expected recycle', () => {
-    return frisby.get(API_URL + '/Recycles/' + '{"$lt":200}')
-      .expect('status', 200)
-      .expect('header', 'content-type', /application\/json/)
-      .expect('jsonTypes', 'data[0]', { id: 42 })
   })
 
   it('PUT update existing recycle is forbidden', () => {

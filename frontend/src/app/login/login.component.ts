@@ -3,9 +3,9 @@ import { WindowRefService } from '../Services/window-ref.service'
 import { Router } from '@angular/router'
 import { Component, OnInit } from '@angular/core'
 import { FormControl, Validators } from '@angular/forms'
-import { library, dom } from '@fortawesome/fontawesome-svg-core'
+import { dom, library } from '@fortawesome/fontawesome-svg-core'
 import { UserService } from '../Services/user.service'
-import { faKey, faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons'
+import { faEye, faEyeSlash, faKey } from '@fortawesome/free-solid-svg-icons'
 import { faGoogle } from '@fortawesome/free-brands-svg-icons'
 import { FormSubmitService } from '../Services/form-submit.service'
 
@@ -15,20 +15,21 @@ dom.watch()
 const oauthProviderUrl = 'https://accounts.google.com/o/oauth2/v2/auth'
 const clientId = '1005568560502-6hm16lef8oh46hr2d98vf2ohlnj4nfhq.apps.googleusercontent.com'
 
-const authorizedRedirectURIs = {
+const authorizedRedirectURIs: any = {
+  'https://demo.owasp-juice.shop': 'https://demo.owasp-juice.shop',
   'http://demo.owasp-juice.shop': 'http://demo.owasp-juice.shop',
   'https://juice-shop.herokuapp.com': 'https://juice-shop.herokuapp.com',
   'http://juice-shop.herokuapp.com': 'http://juice-shop.herokuapp.com',
+  'https://preview.owasp-juice.shop': 'https://preview.owasp-juice.shop',
   'http://preview.owasp-juice.shop': 'http://preview.owasp-juice.shop',
   'https://juice-shop-staging.herokuapp.com': 'https://juice-shop-staging.herokuapp.com',
   'http://juice-shop-staging.herokuapp.com': 'http://juice-shop-staging.herokuapp.com',
+  'http://juice-shop.wtf': 'http://juice-shop.wtf',
   'http://localhost:3000': 'http://local3000.owasp-juice.shop',
   'http://127.0.0.1:3000': 'http://local3000.owasp-juice.shop',
   'http://localhost:4200': 'http://local4200.owasp-juice.shop',
   'http://127.0.0.1:4200': 'http://local4200.owasp-juice.shop',
-  'http://192.168.99.100:3000': 'http://localMac.owasp-juice.shop',
-  'https://juice-shop-v8.herokuapp.com': 'https://juice-shop-v8.herokuapp.com',
-  'http://juice-shop-v8.herokuapp.com': 'http://juice-shop-v8.herokuapp.com'
+  'http://192.168.99.100:3000': 'http://localMac.owasp-juice.shop'
 }
 
 @Component({
@@ -44,12 +45,11 @@ export class LoginComponent implements OnInit {
   public user: any
   public rememberMe: FormControl = new FormControl(false)
   public error: any
-  public oauthUnavailable: any
-  public redirectUri
+  public oauthUnavailable: boolean = true
+  public redirectUri: string = ''
   constructor (private userService: UserService, private windowRefService: WindowRefService, private cookieService: CookieService, private router: Router, private formSubmitService: FormSubmitService) { }
 
   ngOnInit () {
-
     const email = localStorage.getItem('email')
     if (email) {
       this.user = {}
@@ -69,7 +69,6 @@ export class LoginComponent implements OnInit {
   }
 
   login () {
-
     this.user = {}
     this.user.email = this.emailControl.value
     this.user.password = this.passwordControl.value
@@ -77,8 +76,6 @@ export class LoginComponent implements OnInit {
       localStorage.setItem('token', authentication.token)
       this.cookieService.put('token', authentication.token)
       sessionStorage.setItem('bid', authentication.bid)
-      /*Use userService to notifiy if user has logged in*/
-      /*this.userService.isLoggedIn = true;*/
       this.userService.isLoggedIn.next(true)
       this.router.navigate(['/search'])
     }, ({ error }) => {
@@ -87,15 +84,10 @@ export class LoginComponent implements OnInit {
         this.router.navigate(['/2fa/enter'])
         return
       }
-
-      console.log(error)
-
       localStorage.removeItem('token')
-      this.cookieService.remove('token', { domain: document.domain })
+      this.cookieService.remove('token')
       sessionStorage.removeItem('bid')
       this.error = error
-      /* Use userService to notify user failed to log in */
-      /*this.userServe.isLoggedIn = false;*/
       this.userService.isLoggedIn.next(false)
       this.emailControl.markAsPristine()
       this.passwordControl.markAsPristine()
@@ -113,11 +105,9 @@ export class LoginComponent implements OnInit {
   }
 
   googleLogin () {
-
     this.windowRefService.nativeWindow.location.replace(oauthProviderUrl + '?client_id='
       + clientId + '&response_type=token&scope=email&redirect_uri='
       + authorizedRedirectURIs[this.redirectUri])
-
   }
 
 }

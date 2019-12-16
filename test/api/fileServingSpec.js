@@ -18,18 +18,18 @@ describe('Server', () => {
     return frisby.get(URL)
       .expect('status', 200)
       .expect('header', 'content-type', /text\/html/)
-      .expect('bodyContains', 'main.js')
-      .expect('bodyContains', 'runtime.js')
-      .expect('bodyContains', 'polyfills.js')
+      .expect('bodyContains', 'main-es2015.js')
+      .expect('bodyContains', 'runtime-es2015.js')
+      .expect('bodyContains', 'polyfills-es2015.js')
   })
 
   it('GET responds with index.html when visiting application URL with any path', () => {
     return frisby.get(URL + '/whatever')
       .expect('status', 200)
       .expect('header', 'content-type', /text\/html/)
-      .expect('bodyContains', 'main.js')
-      .expect('bodyContains', 'runtime.js')
-      .expect('bodyContains', 'polyfills.js')
+      .expect('bodyContains', 'main-es2015.js')
+      .expect('bodyContains', 'runtime-es2015.js')
+      .expect('bodyContains', 'polyfills-es2015.js')
   })
 
   it('GET a restricted file directly from file system path on server via Directory Traversal attack loads index.html instead', () => {
@@ -70,6 +70,12 @@ describe('/public/images/padding', () => {
 
   it('GET tracking image for "Token Sale" page access challenge', () => {
     return frisby.get(URL + '/assets/public/images/padding/56px.png')
+      .expect('status', 200)
+      .expect('header', 'content-type', 'image/png')
+  })
+
+  it('GET tracking image for "Privacy Policy" page access challenge', () => {
+    return frisby.get(URL + '/assets/public/images/padding/81px.png')
       .expect('status', 200)
       .expect('header', 'content-type', 'image/png')
   })
@@ -114,6 +120,11 @@ describe('Hidden URL', () => {
       .expect('header', 'content-type', 'image/jpeg')
   })
 
+  it('GET the missing "Thank you!" image for assembling the URL hidden in the Privacy Policy', () => {
+    return frisby.get(URL + '/we/may/also/instruct/you/to/refuse/all/reasonably/necessary/responsibility')
+      .expect('status', 404)
+  })
+
   it('GET Klingon translation file for "Extra Language" challenge', () => {
     return frisby.get(URL + '/assets/i18n/tlh_AA.json')
       .expect('status', 200)
@@ -125,9 +136,19 @@ describe('Hidden URL', () => {
       .expect('status', 200)
   })
 
+  it('GET crazy cat photo for "Missing Encoding" challenge', () => {
+    return frisby.get(URL + '/assets/public/images/uploads/%F0%9F%98%BC-%23zatschi-%23whoneedsfourlegs-1572600969477.jpg')
+      .expect('status', 200)
+  })
+
   it('GET folder containing access log files for "Access Log" challenge', () => {
     return frisby.get(URL + '/support/logs/access.log.' + utils.toISO8601(new Date()))
       .expect('status', 200)
       .expect('header', 'content-type', /application\/octet-stream/)
+  })
+
+  it('GET path traversal does not work in folder containing access log files', () => {
+    return frisby.get(URL + '/support/logs/../../../../etc/passwd')
+      .expect('status', 403)
   })
 })

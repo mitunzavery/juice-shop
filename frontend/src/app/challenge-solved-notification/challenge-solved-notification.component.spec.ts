@@ -6,14 +6,14 @@ import { CookieModule, CookieService } from 'ngx-cookie'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
 import { ChallengeService } from '../Services/challenge.service'
 import { ConfigurationService } from '../Services/configuration.service'
-import { HttpClientModule } from '@angular/common/http'
+import { HttpClientTestingModule } from '@angular/common/http/testing'
 import { async, ComponentFixture, TestBed } from '@angular/core/testing'
 import { SocketIoService } from '../Services/socket-io.service'
 
 import { ChallengeSolvedNotificationComponent } from './challenge-solved-notification.component'
 
 class MockSocket {
-  on (str: string, callback) {
+  on (str: string, callback: Function) {
     callback()
   }
 }
@@ -21,8 +21,8 @@ class MockSocket {
 describe('ChallengeSolvedNotificationComponent', () => {
   let component: ChallengeSolvedNotificationComponent
   let fixture: ComponentFixture<ChallengeSolvedNotificationComponent>
-  let socketIoService
-  let mockSocket
+  let socketIoService: any
+  let mockSocket: any
 
   beforeEach(async(() => {
 
@@ -32,7 +32,7 @@ describe('ChallengeSolvedNotificationComponent', () => {
 
     TestBed.configureTestingModule({
       imports: [
-        HttpClientModule,
+        HttpClientTestingModule,
         TranslateModule.forRoot(),
         CookieModule.forRoot(),
         ClipboardModule,
@@ -60,5 +60,25 @@ describe('ChallengeSolvedNotificationComponent', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy()
+  })
+
+  it('should delete notifictions', () => {
+    component.notifications = [
+      { message: 'foo', flag: '1234', copied: false },
+      { message: 'bar', flag: '5678', copied: false }
+    ]
+    component.closeNotification(0)
+
+    expect(component.notifications).toEqual([{ message: 'bar', flag: '5678', copied: false }])
+  })
+
+  it('should delte all notifications if the shiftKey was pressed', () => {
+    component.notifications = [
+      { message: 'foo', flag: '1234', copied: false },
+      { message: 'bar', flag: '5678', copied: false }
+    ]
+    component.closeNotification(0, true)
+
+    expect(component.notifications).toEqual([])
   })
 })

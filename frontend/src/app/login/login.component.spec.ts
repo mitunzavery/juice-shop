@@ -1,6 +1,6 @@
 import { SearchResultComponent } from '../search-result/search-result.component'
 import { WindowRefService } from '../Services/window-ref.service'
-import { HttpClientModule } from '@angular/common/http'
+import { HttpClientTestingModule } from '@angular/common/http/testing'
 import { UserService } from '../Services/user.service'
 import { async, ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing'
 import { LoginComponent } from './login.component'
@@ -21,12 +21,14 @@ import { MatPaginatorModule } from '@angular/material/paginator'
 import { MatDialogModule } from '@angular/material/dialog'
 import { MatDividerModule } from '@angular/material/divider'
 import { TranslateModule } from '@ngx-translate/core'
+import { MatGridListModule } from '@angular/material/grid-list'
+import { MatTooltipModule } from '@angular/material/tooltip'
 
 describe('LoginComponent', () => {
   let component: LoginComponent
   let fixture: ComponentFixture<LoginComponent>
-  let userService
-  let location
+  let userService: any
+  let location: Location
 
   beforeEach(async(() => {
 
@@ -38,7 +40,7 @@ describe('LoginComponent', () => {
     TestBed.configureTestingModule({
       declarations: [ LoginComponent, SearchResultComponent ],
       imports: [
-        HttpClientModule,
+        HttpClientTestingModule,
         RouterTestingModule.withRoutes([
           { path: 'search', component: SearchResultComponent }
         ]
@@ -55,7 +57,9 @@ describe('LoginComponent', () => {
         MatTableModule,
         MatPaginatorModule,
         MatDialogModule,
-        MatDividerModule
+        MatDividerModule,
+        MatGridListModule,
+        MatTooltipModule
       ],
       providers: [
         { provide: UserService, useValue: userService },

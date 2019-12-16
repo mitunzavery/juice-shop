@@ -8,11 +8,17 @@ import * as io from 'socket.io-client'
 export class SocketIoService {
 
   public io = io
-  private _socket
+  private _socket: any
 
   constructor (private ngZone: NgZone) {
     this.ngZone.runOutsideAngular(() => {
-      this._socket = this.io.connect(environment.hostServer)
+      if (environment.hostServer === '.') {
+        this._socket = this.io.connect(window.location.href, {
+          path: (window.location.pathname === '/' ? '/' : window.location.pathname + '/') + 'socket.io'
+        })
+      } else {
+        this._socket = this.io.connect(environment.hostServer)
+      }
     })
   }
 

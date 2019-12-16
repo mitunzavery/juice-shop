@@ -2,11 +2,22 @@
 
 module.exports = function (grunt) {
   var node = grunt.option('node') || process.env.nodejs_version || process.env.TRAVIS_NODE_VERSION || ''
-  var platform = grunt.option('platform') || process.env.PLATFORM || process.env.TRAVIS ? 'x64' : ''
-  var os = grunt.option('os') || process.env.APPVEYOR ? 'windows' : process.env.TRAVIS ? 'linux' : ''
+  var platform = grunt.option('platform') || process.env.TRAVIS ? 'x64' : ''
+  var os = grunt.option('os') || process.env.TRAVIS_OS_NAME === 'windows' ? 'win32' : (process.env.TRAVIS_OS_NAME === 'osx' ? 'darwin' : (process.env.TRAVIS_OS_NAME || ''))
 
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
+
+    replace_json: {
+      manifest: {
+        src: 'package.json',
+        changes: {
+          'engines.node': (node || '<%= pkg.engines.node %>'),
+          os: (os ? [os] : '<%= pkg.os %>'),
+          cpu: (platform ? [platform] : '<%= pkg.cpu %>')
+        }
+      }
+    },
 
     compress: {
       pckg: {
@@ -23,18 +34,19 @@ module.exports = function (grunt) {
               'package.json',
               'ctf.key',
               'swagger.yml',
-              'frontend/dist/frontend/**',
               'config/*.yml',
               'data/*.js',
               'data/static/**',
               'encryptionkeys/**',
+              'frontend/dist/frontend/**',
               'ftp/**',
+              'i18n/.gitkeep',
               'lib/**',
               'models/*.js',
-              'routes/*.js',
               'node_modules/**',
-              'views/**',
-              'uploads/complaints/.gitkeep'
+              'routes/*.js',
+              'uploads/complaints/.gitkeep',
+              'views/**'
             ],
             dest: 'juice-shop_<%= pkg.version %>/'
           }
@@ -43,6 +55,22 @@ module.exports = function (grunt) {
     }
   })
 
+  grunt.registerTask('checksum', 'Create .md5 checksum files', function () {
+    const fs = require('fs')
+    const crypto = require('crypto')
+    fs.readdirSync('dist/').forEach(file => {
+      const buffer = fs.readFileSync('dist/' + file)
+      const md5 = crypto.createHash('md5')
+      md5.update(buffer)
+      const md5Hash = md5.digest('hex')
+      const md5FileName = 'dist/' + file + '.md5'
+      grunt.file.write(md5FileName, md5Hash)
+      grunt.log.write(`Checksum ${md5Hash} written to file ${md5FileName}.`).verbose.write('...').ok()
+      grunt.log.writeln()
+    })
+  })
+
+  grunt.loadNpmTasks('grunt-replace-json')
   grunt.loadNpmTasks('grunt-contrib-compress')
-  grunt.registerTask('package', [ 'compress:pckg' ])
+  grunt.registerTask('package', ['replace_json:manifest', 'compress:pckg', 'checksum'])
 }

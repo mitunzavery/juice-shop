@@ -6,12 +6,12 @@ import { UserService } from '../Services/user.service'
 import { WindowRefService } from '../Services/window-ref.service'
 
 import { ReactiveFormsModule } from '@angular/forms'
-import { HttpClientModule } from '@angular/common/http'
+import { HttpClientTestingModule } from '@angular/common/http/testing'
 import { RouterTestingModule } from '@angular/router/testing'
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations'
 
 import { TranslateModule } from '@ngx-translate/core'
-import { CookieService, CookieModule } from 'ngx-cookie'
+import { CookieModule, CookieService } from 'ngx-cookie'
 
 import { MatCardModule } from '@angular/material/card'
 import { MatFormFieldModule } from '@angular/material/form-field'
@@ -23,13 +23,16 @@ import { MatTableModule } from '@angular/material/table'
 import { MatPaginatorModule } from '@angular/material/paginator'
 import { MatDialogModule } from '@angular/material/dialog'
 import { MatDividerModule } from '@angular/material/divider'
+import { MatGridListModule } from '@angular/material/grid-list'
+import { MatSnackBarModule } from '@angular/material/snack-bar'
+import { MatTooltipModule } from '@angular/material/tooltip'
 
 import { of } from 'rxjs'
 
 describe('TwoFactorAuthEnterComponent', () => {
   let component: TwoFactorAuthEnterComponent
   let fixture: ComponentFixture<TwoFactorAuthEnterComponent>
-  let userService
+  let userService: any
 
   beforeEach(async(() => {
     userService = jasmine.createSpyObj('UserService', ['login'])
@@ -39,7 +42,7 @@ describe('TwoFactorAuthEnterComponent', () => {
 
     TestBed.configureTestingModule({
       imports: [
-        HttpClientModule,
+        HttpClientTestingModule,
         RouterTestingModule.withRoutes([
           { path: 'search', component: SearchResultComponent }
         ]),
@@ -56,7 +59,10 @@ describe('TwoFactorAuthEnterComponent', () => {
         MatPaginatorModule,
         MatDialogModule,
         MatDividerModule,
-        MatButtonModule
+        MatButtonModule,
+        MatGridListModule,
+        MatSnackBarModule,
+        MatTooltipModule
       ],
       declarations: [ TwoFactorAuthEnterComponent, SearchResultComponent ],
       providers: [

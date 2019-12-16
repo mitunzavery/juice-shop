@@ -3,7 +3,7 @@ import { MatDatepickerModule } from '@angular/material/datepicker'
 import { ConfigurationService } from '../Services/configuration.service'
 import { UserService } from '../Services/user.service'
 import { RecycleService } from '../Services/recycle.service'
-import { HttpClientModule } from '@angular/common/http'
+import { HttpClientTestingModule } from '@angular/common/http/testing'
 import { MatCardModule } from '@angular/material/card'
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations'
 import { MatButtonModule } from '@angular/material/button'
@@ -16,13 +16,24 @@ import { ReactiveFormsModule } from '@angular/forms'
 import { MatCheckboxModule } from '@angular/material/checkbox'
 import { MatNativeDateModule } from '@angular/material/core'
 import { of, throwError } from 'rxjs'
+import { AddressComponent } from '../address/address.component'
+import {
+  MatDialogModule,
+  MatDividerModule,
+  MatIconModule,
+  MatRadioModule,
+  MatTableModule,
+  MatToolbarModule,
+  MatTooltipModule
+} from '@angular/material'
+import { RouterTestingModule } from '@angular/router/testing'
 
 describe('RecycleComponent', () => {
   let component: RecycleComponent
   let fixture: ComponentFixture<RecycleComponent>
-  let recycleService
-  let userService
-  let configurationService
+  let recycleService: any
+  let userService: any
+  let configurationService: any
 
   beforeEach(async(() => {
 
@@ -36,8 +47,9 @@ describe('RecycleComponent', () => {
 
     TestBed.configureTestingModule({
       imports: [
+        RouterTestingModule,
         TranslateModule.forRoot(),
-        HttpClientModule,
+        HttpClientTestingModule,
         BrowserAnimationsModule,
         ReactiveFormsModule,
         MatFormFieldModule,
@@ -46,9 +58,16 @@ describe('RecycleComponent', () => {
         MatCardModule,
         MatCheckboxModule,
         MatDatepickerModule,
-        MatNativeDateModule
+        MatNativeDateModule,
+        MatIconModule,
+        MatToolbarModule,
+        MatTableModule,
+        MatRadioModule,
+        MatTooltipModule,
+        MatDialogModule,
+        MatDividerModule
       ],
-      declarations: [ RecycleComponent ],
+      declarations: [ RecycleComponent, AddressComponent ],
       providers: [
         { provide: RecycleService, useValue: recycleService },
         { provide: UserService, useValue: userService },
@@ -69,14 +88,12 @@ describe('RecycleComponent', () => {
   })
 
   it('should reset the form by calling resetForm', () => {
-    component.recycleAddressControl.setValue('Address')
+    component.addressId = '1'
     component.recycleQuantityControl.setValue('100')
     component.pickUpDateControl.setValue('10/7/2018')
     component.pickup.setValue(true)
     component.resetForm()
-    expect(component.recycleAddressControl.value).toBe('')
-    expect(component.recycleAddressControl.pristine).toBe(true)
-    expect(component.recycleAddressControl.untouched).toBe(true)
+    expect(component.addressId).toBeUndefined()
     expect(component.recycleQuantityControl.value).toBe('')
     expect(component.recycleQuantityControl.untouched).toBe(true)
     expect(component.recycleQuantityControl.pristine).toBe(true)
@@ -108,14 +125,16 @@ describe('RecycleComponent', () => {
     recycleService.save.and.returnValue(of({}))
     userService.whoAmI.and.returnValue(of({}))
     spyOn(component,'initRecycle')
-    component.recycleAddressControl.setValue('Address')
+    spyOn(component.addressComponent, 'load')
+    component.addressId = '1'
     component.recycleQuantityControl.setValue(100)
     component.pickup.setValue(false)
-    const recycle = { UserId: undefined, address: 'Address', quantity: 100 }
+    const recycle = { UserId: undefined, AddressId: '1', quantity: 100 }
     component.save()
     expect(recycleService.save.calls.count()).toBe(1)
     expect(recycleService.save.calls.argsFor(0)[0]).toEqual(recycle)
     expect(component.initRecycle).toHaveBeenCalled()
+    expect(component.addressComponent.load).toHaveBeenCalled()
     expect(component.confirmation).toBe('Thank you for using our recycling service. We will deliver your recycle box asap.')
   })
 
@@ -123,15 +142,17 @@ describe('RecycleComponent', () => {
     recycleService.save.and.returnValue(of({ isPickup: true, pickupDate: '10/7/2018' }))
     userService.whoAmI.and.returnValue(of({}))
     spyOn(component,'initRecycle')
-    component.recycleAddressControl.setValue('Address')
+    spyOn(component.addressComponent, 'load')
+    component.addressId = '1'
     component.recycleQuantityControl.setValue(100)
     component.pickup.setValue(true)
     component.pickUpDateControl.setValue('10/7/2018')
-    const recycle = { isPickUp: true, date: '10/7/2018', UserId: undefined, address: 'Address', quantity: 100 }
+    const recycle = { isPickUp: true, date: '10/7/2018', UserId: undefined, AddressId: '1', quantity: 100 }
     component.save()
     expect(recycleService.save.calls.count()).toBe(1)
     expect(recycleService.save.calls.argsFor(0)[0]).toEqual(recycle)
     expect(component.initRecycle).toHaveBeenCalled()
+    expect(component.addressComponent.load).toHaveBeenCalled()
     expect(component.confirmation).toBe('Thank you for using our recycling service. We will pick up your pomace on 10/7/2018.')
   })
 

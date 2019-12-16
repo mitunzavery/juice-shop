@@ -20,8 +20,8 @@ describe('/ftp', () => {
   })
 
   describe('challenge "forgottenBackup"', () => {
-    it('should be able to access file /ftp/coupons_2013.md.bak abusing md_debug parameter', () => {
-      browser.driver.get(browser.baseUrl + '/ftp/coupons_2013.md.bak?md_debug=.md')
+    it('should be able to access file /ftp/coupons_2013.md.bak with poison null byte attack', () => {
+      browser.driver.get(browser.baseUrl + '/ftp/coupons_2013.md.bak%2500.md')
     })
 
     protractor.expect.challengeSolved({ challenge: 'Forgotten Sales Backup' })
@@ -40,7 +40,7 @@ describe('/ftp', () => {
       browser.driver.get(browser.baseUrl + '/ftp/eastere.gg%2500.md')
     })
 
-    protractor.expect.challengeSolved({ challenge: 'Easter Egg Tier 1' })
+    protractor.expect.challengeSolved({ challenge: 'Easter Egg' })
   })
 
   describe('challenge "misplacedSiemFileChallenge"', () => {

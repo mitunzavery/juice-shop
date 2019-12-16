@@ -17,11 +17,11 @@ global.sleep = time => {
 
 module.exports = function productReviews () {
   return (req, res, next) => {
-    const id = req.params.id
+    const id = utils.disableOnContainerEnv() ? Number(req.params.id) : req.params.id
 
     // Measure how long the query takes to find out if an there was a nosql dos attack
     const t0 = new Date().getTime()
-    db.reviews.find({ '$where': 'this.product == ' + id }).then(reviews => {
+    db.reviews.find({ $where: 'this.product == ' + id }).then(reviews => {
       const t1 = new Date().getTime()
       if ((t1 - t0) > 2000) {
         if (utils.notSolved(challenges.noSqlCommandChallenge)) {

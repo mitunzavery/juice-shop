@@ -1,6 +1,6 @@
 import { TranslateModule } from '@ngx-translate/core'
 import { CaptchaService } from '../Services/captcha.service'
-import { HttpClientModule } from '@angular/common/http'
+import { HttpClientTestingModule } from '@angular/common/http/testing'
 import { UserService } from '../Services/user.service'
 import { MatCardModule } from '@angular/material/card'
 import { MatFormFieldModule } from '@angular/material/form-field'
@@ -17,9 +17,9 @@ import { of, throwError } from 'rxjs'
 describe('ContactComponent', () => {
   let component: ContactComponent
   let fixture: ComponentFixture<ContactComponent>
-  let userService
-  let feedbackService
-  let captchaService
+  let userService: any
+  let feedbackService: any
+  let captchaService: any
 
   beforeEach(async(() => {
 
@@ -33,7 +33,7 @@ describe('ContactComponent', () => {
     TestBed.configureTestingModule({
       imports: [
         TranslateModule.forRoot(),
-        HttpClientModule,
+        HttpClientTestingModule,
         ReactiveFormsModule,
         BarRatingModule,
         BrowserAnimationsModule,
@@ -181,11 +181,11 @@ describe('ContactComponent', () => {
 
   it('should clear the form display error if saving feedback fails', fakeAsync(() => {
     feedbackService.save.and.returnValue(throwError({ error: 'Error' }))
-    spyOn(component,'resetForm')
+    spyOn(component,'resetCaptcha')
     component.save()
     expect(component.confirmation).toBeNull()
     expect(component.error).toBe('Error')
-    expect(component.resetForm).toHaveBeenCalled()
+    expect(component.resetCaptcha).toHaveBeenCalled()
   }))
 
   it('should clear the feedback object if saving feedback fails', fakeAsync(() => {

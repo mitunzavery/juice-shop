@@ -14,7 +14,7 @@ module.exports = function changePassword () {
     } else if (newPassword !== repeatPassword) {
       res.status(401).send('New and repeated password do not match.')
     } else {
-      const token = headers['authorization'] ? headers['authorization'].substr('Bearer='.length) : null
+      const token = headers.authorization ? headers.authorization.substr('Bearer='.length) : null
       const loggedInUser = insecurity.authenticatedUsers.get(token)
       if (loggedInUser) {
         if (currentPassword && insecurity.hash(currentPassword) !== loggedInUser.data.password) {
@@ -22,9 +22,9 @@ module.exports = function changePassword () {
         } else {
           models.User.findByPk(loggedInUser.data.id).then(user => {
             user.update({ password: newPassword }).then(user => {
-              if (utils.notSolved(challenges.csrfChallenge) && user.id === 3 && !currentPassword) {
+              if (utils.notSolved(challenges.changePasswordBenderChallenge) && user.id === 3 && !currentPassword) {
                 if (user.password === insecurity.hash('slurmCl4ssic')) {
-                  utils.solve(challenges.csrfChallenge)
+                  utils.solve(challenges.changePasswordBenderChallenge)
                 }
               }
               res.json({ user })

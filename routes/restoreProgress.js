@@ -1,4 +1,4 @@
-const Hashids = require('hashids')
+const Hashids = require('hashids/cjs')
 const hashids = new Hashids('this is my salt', 60, 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890')
 const challenges = require('../data/datacache').challenges
 const utils = require('../lib/utils')
@@ -12,9 +12,9 @@ module.exports = function restoreProgress () {
       res.end()
     } else if (ids.length > 0) {
       for (const name in challenges) {
-        if (challenges.hasOwnProperty(name)) {
-          if (ids.includes(challenges[ name ].id)) {
-            utils.solve(challenges[ name ], true)
+        if (Object.prototype.hasOwnProperty.call(challenges, name)) {
+          if (ids.includes(challenges[name].id)) {
+            utils.solve(challenges[name], true)
           }
         }
       }

@@ -4,7 +4,7 @@ import { FeedbackService } from '../Services/feedback.service'
 import { UserService } from '../Services/user.service'
 import { Component, OnInit } from '@angular/core'
 import { DomSanitizer } from '@angular/platform-browser'
-import { library, dom } from '@fortawesome/fontawesome-svg-core'
+import { dom, library } from '@fortawesome/fontawesome-svg-core'
 import { faArchive, faEye, faHome, faTrashAlt, faUser } from '@fortawesome/free-solid-svg-icons'
 
 library.add(faUser, faEye, faHome, faArchive, faTrashAlt)
@@ -21,7 +21,7 @@ export class AdministrationComponent implements OnInit {
   public userColumns = ['user','email','user_detail']
   public feedbackDataSource: any
   public feedbackColumns = ['user', 'comment', 'rating', 'remove']
-  public error
+  public error: any
   constructor (private dialog: MatDialog, private userService: UserService, private feedbackService: FeedbackService, private sanitizer: DomSanitizer) {}
 
   ngOnInit () {
@@ -34,7 +34,7 @@ export class AdministrationComponent implements OnInit {
     this.userService.find().subscribe((users) => {
       this.userDataSource = users
       for (let user of this.userDataSource) {
-        user.email = this.sanitizer.bypassSecurityTrustHtml(user.email)
+        user.email = this.sanitizer.bypassSecurityTrustHtml(`<span class="${user.token ? 'confirmation' : 'error'}">${user.email}</span>`)
       }
     },(err) => {
       this.error = err
@@ -43,7 +43,7 @@ export class AdministrationComponent implements OnInit {
   }
 
   findAllRecycles () {
-    console.warn('TODO [2019/01/05] Move Recycles to their own page to decouple from admin-only data!')
+    // TODO [2019/01/05] Move Recycles to their own page to decouple from admin-only data!
   }
 
   findAllFeedbacks () {

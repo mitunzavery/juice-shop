@@ -14,7 +14,7 @@ const tamperingProductId = ((() => {
 
 const API_URL = 'http://localhost:3000/api'
 
-const authHeader = { 'Authorization': 'Bearer ' + insecurity.authorize(), 'content-type': 'application/json' }
+const authHeader = { Authorization: 'Bearer ' + insecurity.authorize(), 'content-type': 'application/json' }
 const jsonHeader = { 'content-type': 'application/json' }
 
 describe('/api/Products', () => {
@@ -27,6 +27,7 @@ describe('/api/Products', () => {
         name: Joi.string(),
         description: Joi.string(),
         price: Joi.number(),
+        deluxePrice: Joi.number(),
         image: Joi.string()
       })
   })
@@ -66,6 +67,7 @@ describe('/api/Products/:id', () => {
         name: Joi.string(),
         description: Joi.string(),
         price: Joi.number(),
+        deluxePrice: Joi.number(),
         image: Joi.string(),
         createdAt: Joi.string(),
         updatedAt: Joi.string()

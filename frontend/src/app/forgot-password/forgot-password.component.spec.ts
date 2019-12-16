@@ -1,5 +1,5 @@
 import { TranslateModule } from '@ngx-translate/core'
-import { HttpClientModule } from '@angular/common/http'
+import { HttpClientTestingModule } from '@angular/common/http/testing'
 import { ReactiveFormsModule } from '@angular/forms'
 import { async, ComponentFixture, fakeAsync, TestBed } from '@angular/core/testing'
 import { ForgotPasswordComponent } from './forgot-password.component'
@@ -12,12 +12,16 @@ import { MatFormFieldModule } from '@angular/material/form-field'
 import { MatCardModule } from '@angular/material/card'
 import { UserService } from 'src/app/Services/user.service'
 import { of, throwError } from 'rxjs'
+import { MatTooltipModule } from '@angular/material/tooltip'
+import { MatIconModule } from '@angular/material/icon'
+import { MatPasswordStrengthModule } from '@angular-material-extensions/password-strength'
+import { MatSlideToggleModule } from '@angular/material/slide-toggle'
 
 describe('ForgotPasswordComponent', () => {
   let component: ForgotPasswordComponent
   let fixture: ComponentFixture<ForgotPasswordComponent>
-  let securityQuestionService
-  let userService
+  let securityQuestionService: any
+  let userService: any
 
   beforeEach(async(() => {
 
@@ -30,13 +34,17 @@ describe('ForgotPasswordComponent', () => {
       declarations: [ ForgotPasswordComponent ],
       imports: [
         TranslateModule.forRoot(),
-        HttpClientModule,
+        MatPasswordStrengthModule.forRoot(),
+        HttpClientTestingModule,
         ReactiveFormsModule,
         BrowserAnimationsModule,
         MatCardModule,
         MatFormFieldModule,
         MatInputModule,
-        MatButtonModule
+        MatButtonModule,
+        MatTooltipModule,
+        MatIconModule,
+        MatSlideToggleModule
       ],
       providers: [
         { provide: SecurityQuestionService, useValue: securityQuestionService },
@@ -69,6 +77,7 @@ describe('ForgotPasswordComponent', () => {
   })
 
   it('should be compulsory to answer to the security question', () => {
+    component.emailControl.setValue('a@a')
     component.securityQuestionControl.setValue('')
     expect(component.securityQuestionControl.valid).toBeFalsy()
     component.securityQuestionControl.setValue('Answer')
@@ -81,6 +90,7 @@ describe('ForgotPasswordComponent', () => {
   })
 
   it('should have a password length of at least five characters', () => {
+    component.emailControl.setValue('a@a')
     component.passwordControl.setValue('aaa')
     expect(component.passwordControl.valid).toBeFalsy()
     component.passwordControl.setValue('aaaaa')
@@ -88,11 +98,14 @@ describe('ForgotPasswordComponent', () => {
   })
 
   it('should allow password length of more than twenty characters', () => {
+    component.emailControl.setValue('a@a')
     component.passwordControl.setValue('aaaaaaaaaaaaaaaaaaaaa')
     expect(component.passwordControl.valid).toBe(true)
   })
 
   it('should be compulsory to repeat the password', () => {
+    component.emailControl.setValue('a@a')
+    component.passwordControl.setValue('a')
     component.repeatPasswordControl.setValue('')
     expect(component.repeatPasswordControl.valid).toBeFalsy()
     component.repeatPasswordControl.setValue('a')
@@ -129,10 +142,10 @@ describe('ForgotPasswordComponent', () => {
 
   it('should clear form and gracefully handle error on password change', fakeAsync(() => {
     userService.resetPassword.and.returnValue(throwError({ error: 'Error' }))
-    spyOn(component,'resetForm')
+    spyOn(component,'resetErrorForm')
     component.resetPassword()
     expect(component.error).toBe('Error')
-    expect(component.resetForm).toHaveBeenCalled()
+    expect(component.resetErrorForm).toHaveBeenCalled()
   }))
 
   it('should find the security question of a user with a known email address', () => {

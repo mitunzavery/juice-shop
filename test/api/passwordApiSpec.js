@@ -27,7 +27,7 @@ describe('/rest/user/change-password', () => {
           .expect('status', 200)
           .then(({ json }) => {
             return frisby.get(REST_URL + '/user/change-password?current=kunigunde&new=foo&repeat=foo', {
-              headers: { 'Authorization': 'Bearer ' + json.authentication.token }
+              headers: { Authorization: 'Bearer ' + json.authentication.token }
             })
               .expect('status', 200)
           })
@@ -45,7 +45,7 @@ describe('/rest/user/change-password', () => {
       .expect('status', 200)
       .then(({ json }) => {
         return frisby.get(REST_URL + '/user/change-password?current=definetely_wrong&new=blubb&repeat=blubb', {
-          headers: { 'Authorization': 'Bearer ' + json.authentication.token }
+          headers: { Authorization: 'Bearer ' + json.authentication.token }
         })
           .expect('status', 401)
           .expect('bodyContains', 'Current password is not correct')
@@ -73,14 +73,14 @@ describe('/rest/user/change-password', () => {
   })
 
   it('GET password change with passing unrecognized authorization token', () => {
-    return frisby.get(REST_URL + '/user/change-password?new=foo&repeat=foo', { headers: { 'Authorization': 'Bearer unknown' } })
+    return frisby.get(REST_URL + '/user/change-password?new=foo&repeat=foo', { headers: { Authorization: 'Bearer unknown' } })
       .expect('status', 500)
       .expect('header', 'content-type', /text\/html/)
       .expect('bodyContains', '<h1>' + config.get('application.name') + ' (Express')
       .expect('bodyContains', 'Error: Blocked illegal activity')
   })
 
-  it('GET password change for Bender without current password using CSRF', () => {
+  it('GET password change for Bender without current password using GET request', () => {
     return frisby.post(REST_URL + '/user/login', {
       headers: jsonHeader,
       body: {
@@ -91,7 +91,7 @@ describe('/rest/user/change-password', () => {
       .expect('status', 200)
       .then(({ json }) => {
         return frisby.get(REST_URL + '/user/change-password?new=slurmCl4ssic&repeat=slurmCl4ssic', {
-          headers: { 'Authorization': 'Bearer ' + json.authentication.token }
+          headers: { Authorization: 'Bearer ' + json.authentication.token }
         })
           .expect('status', 200)
       })
