@@ -1,0 +1,24 @@
+name: Sonatype Workflow
+on: 
+  workflow_dispatch:
+jobs:
+  sonatype-cli:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        id: checkout
+        uses: actions/checkout@v4
+      - name: Run evaluate action
+        id: evaluate
+        uses: sonatype/actions/evaluate@v1.1.0
+        with:
+          iq-server-url: https://iq.mzavery.eu.ngrok.io
+          username: ${{ secrets.SONATYPE_IQ_USERNAME }}
+          password: ${{ secrets.SONATYPE_IQ_PASSWORD }}
+          application-id: mitun_juiceshop__mitunzavery
+          scan-targets: package.json package-lock.json
+          sarif-file: 'result.sarif'
+          upload-sarif-file: 'true'
+      # Print out the results
+      - name: Log evaluate action output
+        run: echo "${{ steps.evaluate.outputs.scan-id }} ${{ steps.evaluate.outputs.report-url }}"
